@@ -9,6 +9,20 @@
 #include <unistd.h>
 #endif
 
+#if _WIN32 || _WIN64
+#ifdef _WIN64
+#define LONGLONG long long
+#else
+#define LONGLONG int
+#endif
+#else
+#if __x86_64__ || __ppc64__
+#define LONGLONG long long int
+#else
+#define LONGLONG int
+#endif
+#endif
+
 #ifdef _DEBUG
 #define ASSERT(a, b, c)	\
 	if (!(a)) printf(b, c);
@@ -123,7 +137,7 @@ struct tag_instruction
 {
 	int f;
 	int l;
-	int a;
+	LONGLONG a;
 };
 
 struct tag_var_int
@@ -345,7 +359,7 @@ void load_array(const int *string, int level, int *ptx);
 void load_new_array(const int *string, int level, int *ptx);
 void block_var(int level, int *ptx, int *pdx, BOOL statement);
 void set_defaults(int level, int *ptx, int sx, int ex);
-void instructions_add(int f, int l, int a);
+void instructions_add(int f, int l, LONGLONG a);
 void pop_kind(int kind, int level, int *ptx);
 identinfo_t *ident_find(char *name, int *ptx);
 void pass_or_return_function(identinfo_t *ident_p, int level, int *ptx);

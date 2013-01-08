@@ -1915,7 +1915,7 @@ int single_interpret(instruction_t* code)
 			 * Debugging.
 			 */
 
-			printf("[%d]\n", code[p].a);
+			printf("[%d]\n", (int)code[p].a);
 
 			p++;
 
@@ -2527,6 +2527,6 @@ void print_out_code(instruction_t* instructions, int len)
 		}
 
 		printf("0x%x\t", instructions[i].l);
-		printf("0x%x\n", instructions[i].a);
+		printf("0x%x\n", (int)instructions[i].a);
 	}
 }

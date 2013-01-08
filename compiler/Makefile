@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc -m32
 
 all: p++
 
@@ -21,7 +21,7 @@ p++.o: p++.c
 	CC -c p++.c
 
 p++: compiler.o expressions.o hashtable.o interpretor.o p++.o
-	gcc compiler.o expressions.o hashtable.o interpretor.o p++.o -o p++ -lncurses
+	CC compiler.o expressions.o hashtable.o interpretor.o p++.o -o p++ -lncurses
 
 clean:
 	rm -rf *.o p++

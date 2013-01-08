@@ -4,5 +4,5 @@ using "bignumbers.p++":
 
 function main(args : string)
 {
-  print(args);
+  println(args);
 };

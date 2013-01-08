@@ -100,7 +100,7 @@ void generate_call_func(identinfo_t *ident_p, int level)
 	
 	if (ident_p->address < 0)
 	{
-		instructions_add(OC_FN_CAL, level - ident_p->level, (int)ident_p);
+		instructions_add(OC_FN_CAL, level - ident_p->level, (LONGLONG)ident_p);
 	}
 	else
 	{
@@ -1697,7 +1697,7 @@ void optimize()
 				m_instructions[i - 1].f = OC_LIT;
 				m_instructions[i - 1].l = 0;
 				m_f = *((float*)&m_instructions[i - 1].a);
-				m_instructions[i - 1].a = (int)m_f;
+				m_instructions[i - 1].a = (LONGLONG)m_f;
 				m_instructions_index -= 1;
 
 				break;
@@ -1756,7 +1756,7 @@ void optimize()
 /*
  * Adds an instruction to the output opcodes.
  */
-void instructions_add(int f, int l, int a)
+void instructions_add(int f, int l, LONGLONG a)
 {
 	if (m_instructions_index >= MAX_INSTRUCTIONS)
 	{
@@ -2577,7 +2577,7 @@ void load_ident_default(identinfo_t* ident_p, int level, int *ptx)
 
 		if (ident_p->data.function_val_p->default_p->address < 0)
 		{
-			instructions_add(OC_FN_LIT, level - ident_p->level, (int)ident_p->data.function_val_p->default_p);
+			instructions_add(OC_FN_LIT, level - ident_p->level, (LONGLONG)ident_p->data.function_val_p->default_p);
 		}
 		else
 		{
@@ -2984,7 +2984,7 @@ exp_res_t function_procedure_caller(int level, int *ptx, identinfo_t *ident_p, B
 
 			if (ident_p->address < 0)
 			{
-				instructions_add(OC_FN_CAL, level - ident_p->level, (int)ident_p);
+				instructions_add(OC_FN_CAL, level - ident_p->level, (LONGLONG)ident_p);
 			}
 			else
 			{
@@ -3279,7 +3279,7 @@ void pass_or_return_function(identinfo_t *ident_p, int level, int *ptx)
 	{
 		if (ident_p->address < 0)
 		{
-			instructions_add(OC_FN_LOD, level - ident_p->level, (int)ident_p);
+			instructions_add(OC_FN_LOD, level - ident_p->level, (LONGLONG)ident_p);
 		}
 		else
 		{
@@ -3290,7 +3290,7 @@ void pass_or_return_function(identinfo_t *ident_p, int level, int *ptx)
 	{
 		if (ident_p->address < 0)
 		{
-			instructions_add(OC_FN_LIT, level - ident_p->level, (int)ident_p);
+			instructions_add(OC_FN_LIT, level - ident_p->level, (LONGLONG)ident_p);
 		}
 		else
 		{
@@ -3390,7 +3390,7 @@ exp_res_t load_number(int level, int *ptx)
 	}
 	else if (exp_res.type == KIND_INTEGER)
 	{
-		instructions_add(OC_LIT, 0, (int)m_number);
+		instructions_add(OC_LIT, 0, (LONGLONG)m_number);
 		exp_res.ident.data.int_val.is_character = m_is_char;		
 	}
 	else
@@ -6203,7 +6203,7 @@ void statement(int level, int *ptx, int *pdx, identinfo_t *func_ident_p)
 			get_symbol();
 
 			instructions_add(OC_DEC, 0, 0);
-			instructions_add(OC_JMP, GOTO_LABEL, (int)_strdup(m_ident_name));
+			instructions_add(OC_JMP, GOTO_LABEL, (LONGLONG)_strdup(m_ident_name));
 		}
 		else
 		{
@@ -7210,7 +7210,7 @@ void process_block(int level, int tx, identinfo_t *ident_p)
 	 * Fix all the return statements to jump to here
 	 * right before the garbage collection of arrays.
 	 *
-	 * Fix all the call instructions that call predecalred functions.
+	 * Fix all the call instructions that call predeclared functions.
 	 *	
 	 */ 	
 	for (i = inx; i < m_instructions_index; i++)
@@ -7539,7 +7539,7 @@ BOOL load_file(const char *file)
 
 			if (path == 0)
 			{
-#ifdef WINDOWS
+#if WIN32
 				path = ".\\lib";
 #else
 				path = "./lib";
