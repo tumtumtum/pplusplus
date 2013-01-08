@@ -2,6 +2,9 @@ CC=gcc
 
 all: p++
 
+install: all
+	cp p++ /usr/local/bin
+
 compiler.o: compiler.c
 	CC -c compiler.c
 

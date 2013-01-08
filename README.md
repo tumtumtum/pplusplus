@@ -1,9 +1,9 @@
 P++
 =========
 
-P++ is language based on PL/0 but heavily borrows form C, Haskell and other languages.
+P++ is a language based on PL/0 but borrows heavily from C, Haskell and other languages.
 
-I wrote the compiler and interpretor for P++ at University back in 2000 as part of my second year programming languages paper.  It was only supposed to be a 200 line assignment but I enjoyed learning about compilers so much that I added many advanced (advanced compared to PL/0) features such as:
+I wrote the compiler and interpreter for P++ at University back in 2000 as part of my second year programming languages paper.  It was only supposed to be a 200 line assignment but I enjoyed learning about compilers so much that I added many advanced (advanced compared to PL/0) features such as:
 
 	* Strings
 	* Reference counted GC

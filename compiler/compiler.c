@@ -7539,7 +7539,11 @@ BOOL load_file(const char *file)
 
 			if (path == 0)
 			{
+#ifdef WINDOWS
 				path = ".\\lib";
+#else
+				path = "./lib";
+#endif
 			}
 		}
 		
