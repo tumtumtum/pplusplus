@@ -6,6 +6,7 @@
 *.a
 
 .DS_STORE
+Thumbs.db
 
 # Shared objects (inc. Windows DLLs)
 *.dll
