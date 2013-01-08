@@ -1,0 +1,8 @@
+using "string.p++";
+using "stream.p++";
+using "bignumbers.p++":
+
+function main(args : string)
+{
+  print(args);
+};

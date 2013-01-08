@@ -1,0 +1,11 @@
+using "math.p++";
+using "stream.p++";
+using "string.p++";
+
+function main()
+{
+	repeat
+	{
+		println(random(100));
+	};
+};

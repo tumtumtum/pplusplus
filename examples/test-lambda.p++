@@ -1,0 +1,14 @@
+include "array.p++";
+include "string.p++";
+include "stream.p++";
+
+function main(args : string) : integer
+{
+  // Uses lambda expressions to do ROT13 on input
+  
+	println(string_mapper(args,
+		lambda(c) => (islower(c) ? (((c - 'a' + 13) % 26) + 'a') : 
+					isupper(c) ? (((c - 'A' + 13) % 26) + 'A') : c)));
+					
+  retval := 0;
+};

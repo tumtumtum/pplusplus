@@ -1,0 +1,19 @@
+using "stream.p++";
+using "string.p++";
+
+function main()
+{
+	var s : string;
+
+	repeat
+	{
+		s := readln();
+
+		if (isnull(s))
+		{
+			exit repeat;
+		};
+
+		println(rot(s));
+	};
+};

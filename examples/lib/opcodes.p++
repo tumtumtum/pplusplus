@@ -1,0 +1,158 @@
+/*
+ * @file opcodes.p++
+ *
+ * P++ machine opcode constants.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+const OC_NOP = 0x0000;
+const OC_LIT = 0x1000;
+const OC_OPR = 0x1010;
+const OC_FOP = 0x1015;
+const OC_LOD = 0x1020;
+const OC_STO = 0x1030;
+const OC_CAL = 0x1040;
+const OC_TAC = 0x1045;
+const OC_INC = 0x1050;
+const OC_JMP = 0x1060;
+const OC_JPC = 0x1070;
+const OC_STP = 0x1090;
+const OC_LID = 0x10A0;
+const OC_LDA = 0x10B0;
+const OC_SID = 0x10C0;
+const OC_DEC = 0x10D0;
+const OC_CAI = 0x10E0;
+const OC_CII = 0x10F0;
+const OC_CAS = 0x1100;
+const OC_SLD = 0x1110;
+const OC_SWS = 0x1120;
+const OC_LIS = 0x1130;
+const OC_TRM = 0x1FFF;
+
+/*
+ * Inline operation opcodes.
+ */
+const OC_ISL = 0x2000;
+const OC_ISR = 0x2010;
+const OC_IAD = 0x2040;
+const OC_ISU = 0x2050;
+const OC_IMU = 0x2060;
+const OC_IDI = 0x2070;
+const OC_IXO = 0x2080;
+const OC_IOR = 0x2090;
+const OC_IAN = 0x20A0;
+
+
+/*
+ * Inline indirect operaton opcodes.
+ */
+const OC_IZL = 0x3000;
+const OC_IZR = 0x3010;
+const OC_IIA = 0x3020;
+const OC_IIS = 0x3030;
+const OC_IIM = 0x3040;
+const OC_IID = 0x3050;
+const OC_IIX = 0x3060;
+const OC_IIO = 0x3070;
+const OC_IIB = 0x3080;
+
+/*
+ * Function sepcific opcodes.
+ */
+const OC_SRV = 0x5000;
+const OC_LRV = 0x5010;
+
+
+/*
+ * Memory opcodes.
+ */
+const OC_MAL = 0xA000;
+const OC_FRE = 0xA020;
+const OC_RAL = 0xA030;
+const OC_MSZ = 0xA040;
+const OC_MLS = 0xA100;
+const OC_MSS = 0xA110;
+const OC_MLO = 0xA120;
+const OC_MST = 0xA130;
+const OC_MLI = 0xA140;
+const OC_MSI = 0xA150;
+const OC_MCP = 0xA160;
+
+
+/*
+ * Register opcodes
+ */
+const OC_POP = 0xB000;
+const OC_PUS = 0xB010;
+const OC_MOV = 0xB020;
+const OC_RIO = 0xB030;
+const OC_PAS = 0xB040;
+const OC_SRG = 0xB050;
+
+/*
+ * Utility opcodes.
+ */
+
+const OC_TME = 0xC000;
+const OC_WRT = 0xC010;
+const OC_WRF = 0xC020;
+const OC_WRB = 0xC030;
+const OC_DEB = 0xC040;
+const OC_CLK = 0xC050;
+const OC_CLI = 0xC060;
+const OC_REB = 0xC070;
+const OC_RCH = 0xC080;
+const OC_WCH = 0xC090;
+
+/*
+ * File/Stream opcodes.
+ */
+
+const OC_FOF = 0xD000;
+const OC_FCF = 0xD010;
+const OC_EOF = 0xD020;
+
+/*
+ * OC_OPR integer operators.
+ */
+const OPR_ADD = 0x1010;
+const OPR_SUB = 0x1020;
+const OPR_MUL = 0x1030;
+const OPR_DIV = 0x1040;
+const OPR_MOD = 0x1050;
+const OPR_EQL = 0x1060;
+const OPR_NEQ = 0x1070;
+const OPR_LES = 0x1080;
+const OPR_LEQ = 0x1090;
+const OPR_GRE = 0x1100;
+const OPR_GRQ = 0x1110;
+const OPR_SHL = 0x1120;
+const OPR_SHR = 0x1130;
+const OPR_BOR = 0x1140;
+const OPR_AND = 0x1150;
+const OPR_XOR = 0x1160;
+
+/*
+ * These operators are simple unary ones.
+ */
+const OPR_ODD = 0x1170;
+const OPR_NEG = 0x1180;
+const OPR_NOT = 0x1190;
+
+/*
+ * OC_FOP floating point operators.
+ */
+const FOP_ADD = 0x1000;
+const FOP_SUB = 0x1010;
+const FOP_MUL = 0x1020;
+const FOP_DIV = 0x1030;
+const FOP_EQL = 0x1040;
+const FOP_NEQ = 0x1050;
+const FOP_LES = 0x1060;
+const FOP_LEQ = 0x1070;
+const FOP_GRE = 0x1080;
+const FOP_GRQ = 0x1090;
+const FOP_INT = 0x10A0;
+const FOP_FLO = 0x10B0;
+const FOP_NEG = 0x10C0;

@@ -1,0 +1,195 @@
+include "lang.p++";
+include "opcodes.p++";
+include "registers.p++";
+
+/*
+ * What memory blocks look like.
+ *
+ * [memory refcount][reserved]
+ */
+
+/*
+ * Size of the header of each block of memory.
+ */
+const MEMORY_HEADER_SIZE = 0x2;
+
+/*
+ * The reference count of the block of memory.
+ */
+const MEMORY_REFCOUNT_OFFSET = 0x0;
+
+/*
+ * Converts a memory handle to an integer.  Be careful!
+ */
+function __memory_handle_2int(memory_handle : handle) : integer
+{
+	machine_code
+	{
+		OC_LOD		%memory_handle		memory_handle
+		OC_SRV		0					1
+		OC_OPR		0					0
+	};
+};
+
+/*
+ * Adds a reference to a memory block.
+ */
+function __memory_addref(memory_handle : handle)
+{
+	if (!isnull(memory_handle))
+	{
+		machine_code
+		{
+			/*
+			 * Load the memory offset into CX.
+			 */
+			OC_SRG		MEMORY_REFCOUNT_OFFSET	REG_CX
+						
+			/*
+			 * Load and add one to the reference count.
+			 */
+			OC_MLO		%memory_handle			memory_handle
+			OC_LIT		0						1
+			OC_OPR		0						OPR_ADD
+
+			/*
+			 * Store the new reference count.
+			 */
+			OC_MST		%memory_handle			memory_handle
+			
+			/*
+			 * Return the new reference count.
+			 */
+			OC_SRV		0						1
+		};
+	}
+	else
+	{
+		return 0;
+	};
+};
+
+
+/*
+ * Releases a memory block.
+ */
+function __memory_release(memory_handle : handle)
+{
+	if (!isnull(memory_handle))
+	{		
+		machine_code
+		{
+			/*
+			 * Load the memory offset into CX.
+			 */
+			
+			OC_SRG		MEMORY_REFCOUNT_OFFSET	REG_CX
+			
+			/*
+			 * Load and subtract '1' from the reference count.
+			 */
+			OC_MLO		%memory_handle			memory_handle
+			OC_LIT		0						1
+			OC_OPR		0						OPR_SUB
+
+			/*
+			 * Make two copies of the new reference count.
+			 */
+			OC_SLD		0						0
+			OC_SLD		0						0
+			
+			/*
+			 * Store the reference count back into the memory block.
+			 */	
+			OC_MST		%memory_handle			memory_handle
+
+			/*
+			 * Jump to the code that does memory freeing if the refcount is 0.
+			 */
+			OC_JPC		0						&2
+			
+			/*
+			 * Jump past the code that does the memory freeing.
+			 */
+			OC_JMP		0						&3
+
+			/*
+			 * Frees the array.
+			 */			
+			OC_LOD		%memory_handle			memory_handle
+			OC_FRE		0						0
+			
+			/*
+			 * Return the new reference count.
+			 */
+			OC_SRV		0						1
+		};
+	}
+	else
+	{	
+		return 0;
+	}
+};
+
+
+/*
+ * Returns the reference count of an array.
+ */
+function __memory_ref_count(memory_handle : handle) : integer
+{	
+	if (!isnull(memory_handle))
+	{
+		machine_code
+		{
+			/*
+			 * Load DX.
+			 */
+			OC_PUS		0					REG_DX
+
+			/*
+			 * Turn on memory mode.
+			 */
+			OC_SRG		REG_MEMORY_FLAG		REG_DX
+
+			/*
+			 * Load the reference count.
+			 */
+			OC_SRG		MEMORY_REFCOUNT_OFFSET	REG_CX
+			OC_LOD		%memory_handle			memory_handle
+
+			/*
+			 * Set the return value to the refcount.
+			 */
+			OC_SRV		0					1
+			
+			/*
+			 * Restore DX.
+			 */
+			OC_POP		0					REG_DX
+		};
+	}
+	else
+	{
+		return 0;
+	}
+};
+
+/*
+ * @returns The size in memory blocks (sizeof(int)) that the array has available.
+ */
+function __memory_size(memory_handle : handle)
+{
+	if (!isnull(memory_handle))
+	{
+		machine_code
+		{	
+			OC_MSZ		%memory_handle		memory_handle
+			OC_SRV		0					1
+			OC_OPR		0					0
+		};
+	}
+	else
+	{
+		return 0;
+	}
+};

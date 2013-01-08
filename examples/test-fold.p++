@@ -1,0 +1,10 @@
+using "fold.p++";
+using "array.p++";
+using "string.p++";
+using "stream.p++";
+using "utility.p++";
+
+function main()
+{
+	println(hashcode("aabasdaa"));
+};

@@ -1,0 +1,6 @@
+using "stream.p++";
+
+function main() : integer
+{
+  println("Hello World");
+};

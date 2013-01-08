@@ -1,0 +1,148 @@
+/*
+ * @file lang.p++
+ *
+ * Language functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+const true = 1;
+const false = 0;
+const on = 1;
+const off = 0;
+const MAX_INT = 0xffffffff;
+const EOS		=	-1;
+
+include "opcodes.p++";
+
+
+/*
+ * The following define some casting functions.   However P++ version 1.1
+ * supports C style casting, so these should be used instead as it is
+ * faster.
+ */
+
+/*
+ * Converts an integer into a floating point number.
+ */
+function i2f(x : integer) : float
+{
+	machine_code
+	{
+		OC_LOD	%x	x
+		OC_FOP 0	FOP_FLO
+		OC_SRV 0	1
+	};
+};
+
+/*
+ * Converts a floating point number into a integer.
+ */
+function f2i(x : float) : integer
+{
+	machine_code
+	{
+		OC_LOD	%x	x
+		OC_FOP 0	FOP_INT
+		OC_SRV 0	1
+	};
+};
+
+/*
+ * Directly makes an integer into a floating point number bypassing casting.
+ */
+function nocast_i2f(x : integer) : float
+{
+	machine_code
+	{
+		OC_LOD	%x	x
+		OC_SRV	0	1
+	};
+};
+
+/*
+ * Directly makes a floating point number into an integer bypassing casting.
+ */
+function nocast_f2i(x : float) : integer
+{
+	machine_code
+	{
+		OC_LOD	%x	x
+		OC_SRV	0	1
+	};
+};
+
+/*
+ * Does a system speaker beep.
+ */
+function beep() : integer
+{
+	machine_code
+	{
+		OC_LOD		0		'\a'
+		OC_WRB		0		0
+	};	
+};
+
+/*
+ * Terminates the program.
+ */
+function terminate() : integer
+{
+	machine_code
+	{
+		OC_TRM		0		0
+	};
+};
+
+/*
+ * Returns the address of any variable.
+ */
+function addressof(ref h : handle) : integer
+{
+	machine_code
+	{
+		OC_LOD		%h		h
+		OC_SRV		0		1
+	};
+};
+
+/*
+ * Tests to see if an array handle/reference, integer or pointer is null.
+ *
+ * Should make a new argument predicate "noref" that means no addref for arguments
+ * handles suck.
+ *
+ */
+function isnull(h : handle) : boolean
+{
+	return h = null;
+};
+
+/*
+ * Tests to see if a ref parameter is missing.
+ */
+function ismissing(ref h : handle) : boolean
+{
+	return addressof(h) = 0;
+};
+
+/*
+ * Writes x to standard output (no need for string libraries).
+ */
+function debug(x : integer) : integer
+{
+	machine_code
+	{		
+		OC_LIT		0		0
+		OC_LOD		%x		x
+		OC_WRT		0		0
+
+		OC_LIT		0		0
+		OC_LIT		0		'\n'
+		OC_WRB		0		0
+	};
+
+	return x;
+};

@@ -1,0 +1,7 @@
+include "stream.p++";
+include "string.p++";
+
+function cgi_plain_http_header() : string
+{
+	return "content-type:\ttext/html\n";
+};

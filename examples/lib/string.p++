@@ -1,0 +1,922 @@
+/*
+ * @file string.p++
+ *
+ * String functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+using "lang.p++";
+using "math.p++";
+using "fold.p++";
+using "array.p++";
+using "basic_io.p++";
+using "functions.p++";
+
+var m_trim_char : character;
+
+/*
+ * Predeclarations for functions.
+ */
+declare function snip(s : string, length) : string;
+declare function a2A(char : character) : character;
+declare function A2a(char : character) : character;
+declare function trim(s : string, c : character = ' ') : string;
+
+
+/*
+ * Generates a string of a certain number of the supplied character.
+ */
+function new_string(length = 0, c : character = ' ') : string	
+{
+	var s : character[0];
+
+	if (length <= 0)
+	{
+		return s;
+	};
+
+	snip(s, length);
+
+	option boundary_check off;
+
+	var i;
+
+	for i := 0 to length - 1
+	{
+		s[i] := c;
+	};
+
+	option boundary_check on;
+
+	return s;
+};
+
+/*
+ * Makes a copy of a string.
+ *
+ * @returns a new string that contains a copy of the supplied string.
+ */
+function new_string_copy(s : string, len := -1) : string
+{
+	return new_integer_array_copy(s, len);
+};
+
+/*
+ * @returns the length of a string.
+ */
+function string_length(s : string) : integer
+{
+	return array_length(s);
+};
+
+function string_copy(src : string, des : string) : string
+{
+	var i, len := string_length(src);
+	
+	snip(des, len);
+
+	if (len > 0)
+	{
+		for i := 0 to len - 1
+		{
+			des[i] := src[i];
+		};
+	};
+	
+	return des;
+};
+
+
+/*
+ * Cuts a string down to a certain length.
+ * Can also be used to increase a string's length (fills up with spaces).
+ */
+function snip(s : string, length) : string
+{
+	var i, len := string_length(s);
+
+	if (len = length) then return s;
+	
+	array_snip(s, length);
+
+	if (length < len)
+	{
+		return s;	
+	}
+	else if (length > len)
+	{
+		option boundary_check off;
+
+		for i := len to length - 1
+		{
+			s[i] := ' ';
+		};
+
+		option boundary_check on;
+	};
+	
+	return s;	
+};
+
+/*
+ * Appends one string to another string.
+ *
+ * @returns The destination string (with the source appended).
+ */
+function string_append(destination : string, source : string) : string
+{
+	return integer_array_append(destination, source);
+};
+
+/*
+ * Finds a character in a string.
+ *
+ * @returns 0 based index of the character in the string.
+ *			or -1 if the character was not found.
+ */
+function string_find_char(s : string, c : character) : integer
+{
+	return array_find_integer(s, c);
+};
+
+/*
+ * Finds a character in a string.
+ *
+ * @returns 0 based index of the character in the string.
+ *			or -1 if the character was not found.
+ */
+function string_reverse_find_char(s : string, c : character) : integer	
+{
+	var len;
+
+	if ((len := string_length(s)) > 0)
+	{
+		option boundary_check off;
+
+		var i;
+
+		for i := len - 1 to 0 step - 1
+		{		
+			if (s[i] = c)
+			{				
+				return i;
+			};
+		};		
+
+		option boundary_check on;
+	};
+
+	return -1;
+};
+
+/*
+ * Reverses a string.
+ *
+ * @returns The string supplied (now reversed).
+ */
+function reverse(s : string) : string
+{
+	var i, x, c : character;
+	var len := string_length(s);
+	
+	for i := 0 to (len - 1) / 2
+	{
+		option boundary_check off;
+
+		c := s[i];
+
+		x := len - i - 1;
+
+		s[i] := s[x];
+		s[x] := c;
+
+		option boundary_check on;
+	};
+
+	return s;
+};
+
+/*
+ * Converts a boolean into a string.
+ *
+ * @example b2s(1) returns "true".
+ */
+function b2s(x : boolean) : string
+{
+	var s : string;
+
+	if (x)
+	{
+		s := "true";
+	}
+	else
+	{
+		s := "false";
+	};
+	
+	return s;
+};
+
+/*
+ * Converts a character into a one length string.
+ *
+ * @example c2s(65) returns "A".
+ */
+function c2s(char : character) : string
+{
+	var s : character[1];
+
+	option boundary_check off;
+
+	s[0] := char;
+
+	option boundary_check on;
+
+	return s;
+};
+
+/*
+ * Converts an integer into a string representing the number using the specified
+ * radix (or number base).
+ *
+ * @example i2s(100) returns "100".
+ * @returns A string representation of the integer.
+ */
+function i2s(number, radix = 10) : string
+{
+	var d, i, n, s : string;
+
+	if (number < 0)
+	{
+		n := true;
+		number := -number;
+	};
+	
+	if (number = 0)
+	{
+		s[0] := '0';
+	}
+	else
+	{
+		while (number > 0)
+		{
+			d := number % radix;
+			number /= radix;
+			
+			if (d > 9)
+			{		
+				s[i] := d + - 10 + 'a';			
+			}			
+			else
+			{			
+				s[i] := d + '0';
+			};
+
+			i++;
+		};
+
+		snip(s, i);
+	};
+
+	if (n)
+	{
+		s[i] := '-';
+	};
+
+	return reverse(s);
+};
+
+/*
+ * Converts a floating point number into a string.
+ */
+function f2s(f : float, dp = 6) : string	
+{	
+	var i, j, k, n, dot;
+	var s : string, r : float;
+
+	if (f < 0)
+	{
+		f := -f;
+		s[0] := '-';
+	};
+
+	repeat
+	{
+		i := f2i(f);		
+		
+		f := f - f2i(f);
+		
+		string_append(s, i2s(i));
+		
+		if (f < 1 && !dot)
+		{			
+			dot := 1;
+			string_append(s, ".");			
+		};
+
+		if (dot)
+		{			
+			k++;
+		};
+		
+		if (k > dp)
+		{
+			exit repeat;
+		};
+		
+		f *= 10;
+	};	
+
+	return s;
+};
+
+/*
+ * Converts a number (base 10) into a binary (base 2) string.
+ */
+function bin(number : integer) : string
+{
+	if (number >= 0)
+	{
+		return i2s(number, 2);
+	}
+	else
+	{
+		return "0";
+	};
+};
+
+/*
+ * Converts a number (base 10) into a hexadecimal (base 16) string.
+ */
+function hex(number : integer) : string
+{
+	return i2s(number, 16);
+};
+
+/*
+ * Converts a number (base 10) into an octal (base 8) string.
+ */
+function oct(number : integer) : string
+{
+	return i2s(number, 8);
+};
+
+/*
+ * @returns	true if the character is a number.
+ */
+function isnumber(c : character) : boolean
+{
+	return c >= '0' && c <= '9';
+};
+
+/*
+ * @returns	true if the character is a letter.
+ */
+function isletter(c : character) : boolean
+{
+	c := A2a(c);
+
+	return c >= 'a' && c <= 'z';
+};
+
+/*
+ * @returns	true if the character is a number or letter.
+ */
+function isalphanumeric(c : character) : boolean
+{
+	if (!isnumber(c))
+	{
+		return false;
+	};
+
+	return isletter(c);
+};
+
+/*
+ * Makes a character uppercase.
+ */
+function a2A(char : character) : character
+{
+	return ((char >= 'a') && (char <= 'z')) ? (char + ('A' - 'a')) : char;
+};
+
+/*
+ * Makes a character lowercase.
+ */
+function A2a(char : character) : character
+{	
+	return ((char >= 'A') && (char <= 'Z')) ? char - ('A' - 'a') : char;
+};
+
+/*
+ * Transforms a string on a character - character basis.
+ *
+ * @returns The passed string transformed.
+ */
+function string_mapper(s : string, cc : char_char_fn, cb_stop : char_bool_fn = alwaysfalse) : string
+{
+	var i, len;
+
+	if (s = null)
+	{
+		return s;
+	};
+
+	if ((len := string_length(s)) > 0)
+	{
+		for i := 0 to len - 1
+		{
+			if (cb_stop(s[i]))
+			{
+				exit for;
+			};
+
+			s[i] := cc(s[i]);
+		};
+	};
+
+	return s;
+};
+
+/*
+ * Filters out characters in a string, between two points.  The filtering can be
+ * stopped at anytime.
+ */
+function new_string_filter(s : string, cb : char_bool_fn = alwaystrue, cb_stop : char_bool_fn = alwaysfalse, start_index = 0, end_index = -1) : string
+{
+	var i, j, k, l, len, s2 : string;
+	
+	if (end_index = -1)
+	{
+		end_index := string_length(s) - 1;
+	};
+
+	if (start_index > end_index)
+	{
+		k := -1;
+	}
+	else
+	{
+		k := 1;
+	};
+		 
+	for i := start_index to end_index step k
+	{
+		if (cb_stop(s[i]))
+		{		
+			exit for;
+		};
+
+		if (cb(s[i]))
+		{	
+			s2[j++] := s[i];
+		};
+	};	
+
+	if (k = -1)
+	{	
+		reverse(s2);		
+	};	
+	
+	
+	return s2;
+};
+
+function string_filter(s : string, cb : char_bool_fn = alwaystrue, cb_stop : char_bool_fn = alwaysfalse, start_index = 0, end_index = -1) : string
+{	
+	var s2 : string;
+
+	s2 := new_string_filter(s, cb, cb_stop, start_index, end_index);
+
+	string_copy(s2, s);	
+
+	return s;
+};
+
+/*
+ * Removes a certain character's occurance from a string.
+ */
+function filter_char(s : string, c : character) : string
+{
+	/*
+	 * Can't pass our own variables along with a lambda pointer (obviously).
+	 */
+
+	m_trim_char := c;
+
+	return string_filter(s, lambda(ch : character) => ch != m_trim_char);
+};
+
+/*
+ * Uses string transformations to make an entire string uppercase.
+ *
+ * @returns The string supplied (but converted to uppercase).
+ */
+function to_upper(s : string) : string
+{
+	return string_mapper(s, a2A);		
+};
+
+/*
+ * Uses string transformations to make an entire string lowercase.
+ *
+ * @returns The string supplied (but converted to lowercase).
+ */
+function to_lower(s : string) : string
+{
+	return string_mapper(s, A2a);
+};
+
+/*
+ * Returns a new string that contains a string made up of part of another string.
+ */
+function substring(s : string, start_index, length = -1) : string
+{
+	var i, j, l, s2 : string = "", len;
+
+	if (isnull(s)) then return null;
+
+	i := start_index;
+	len := string_length(s);
+	
+	i := (i >= 0) ? i : 0;
+
+	if (length = -1)
+	{
+		length := len - i;
+	};
+
+	if (length < 0) then return s2;
+
+	snip(s2, length);
+	
+	while (j < length && j < len)
+	{		
+		option boundary_check off;
+
+		s2[j++] := s[i++];
+
+		option boundary_check on;
+	};
+
+	return s2;
+};
+
+/*
+ * Compares two strings.
+ *
+ * @returns a negative number if the first is less than the second.
+ *			a positive number if the first is more than the second.
+ *			zero if the strings are the same.
+ */
+function string_compare(s1 : string, s2 : string) : integer
+{	
+	var i, len, len1, len2;
+
+	return integer_array_compare(s1, s2);
+};
+
+/*
+ * Converts a string into an integer.
+ *
+ * @returns The integer that was held in the string.
+ */
+function s2i(s : string, radix : integer = 10)
+{
+	var i, j, start, answer, max, max2, neg;
+
+	trim(s, ' ');
+
+	max := string_length(s) - 1;
+
+	if (max >= 0)
+	{
+		if ((max2 := string_find_char(s, '.')) >= 0)
+		{
+			max2--;
+		}
+		else
+		{
+			max2 := max;
+		};
+						
+		if (max2 >= 0)
+		{
+			if (s[0] = '-')
+			{
+				neg := true;
+				start := 1;
+			}
+			else
+			{
+				start := 0;
+			};
+
+			if (start <= max2)
+			{
+				j := power(radix, max2 - start);
+
+				for i := start to max2
+				{
+					if (s[i] = '.') then exit for;
+					
+					if (!(isnumber(s[i]) || isletter(s[i])))
+					{
+						answer := 0;
+						exit for;
+					};
+					
+					if (isnumber(s[i]))
+					{
+						answer += (s[i] - '0') * j;
+					}
+					else
+					{
+						
+						answer += (a2A(s[i]) - 'A' + 10) * j;
+					};
+
+					j /= radix;
+				};
+			};
+		};
+	}
+	else
+	{
+		return 0;
+	};
+
+	return (neg) ? -answer : answer;
+};
+
+/*
+ * Converts a string into a float.
+ *
+ * @returns The float that was held in the string.
+ */
+function s2f(s : string) : float	
+{
+	var i, j, len, f : float, i_part, d_part;
+
+	trim(s, ' ');
+
+	i_part := s2i(s);
+
+	i := string_find_char(s, '.');
+
+	if (i >= 0)
+	{
+		j := string_length(s) - i - 1;
+
+		if (j > 6) then j := 6;
+
+		d_part := i2s(substring(s, i + 1, j));
+
+		f := i_part + (d_part / power(10, j));
+	}
+	else
+	{
+		f := i_part;
+	};
+
+	return f;
+};
+
+/*
+ * Converts a hexadecimal string into an integer.
+ */
+function x2i(s : string) : integer
+{
+	return s2i(s, 16);
+};
+
+
+var m_stop_filtering : boolean;
+
+/*
+ * Removes the first occurances of a character in a string.
+ */
+function ltrim(s : string, c : character = ' ') : string	
+{
+	var len;
+
+	m_trim_char := c;
+	m_stop_filtering := false;
+	
+	if ((len := string_length(s)) > 0)
+	{
+		return string_filter(s, lambda(x) => m_stop_filtering ? true : (m_stop_filtering := (x != m_trim_char)));
+	}
+	else
+	{
+		return snip(s, 0);
+	};
+};
+
+/*
+ * Removes the last occurances of a character in a string.
+ */
+function rtrim(s : string, c : character = ' ') : string
+{
+	var len;
+
+	m_trim_char := c;
+	m_stop_filtering := false;
+	
+	if ((len := string_length(s)) > 0)
+	{
+		return string_filter(s, lambda(x) => m_stop_filtering ? true : (m_stop_filtering := (x != m_trim_char)), , len - 1, 0);
+	}
+	else
+	{
+		return snip(s, 0);
+	};
+};
+
+/*
+ * Removes the first and last occurances of a character in a string.
+ */
+function trim(s : string, c : character = ' ') : string
+{	
+	return ltrim(rtrim(s, c), c);
+};
+
+/*
+ * Returns the left part of a string.
+ */
+function left(s : string, length) : string
+{
+	return substring(s, 0, length);
+};
+
+/*
+ * Returns the right part of a string.
+ */
+function right(s : string, length) : string
+{
+	var i;
+
+	i := string_length(s) - length;
+
+	return substring(s, i);
+};
+
+/*
+ * <returns>true</returns> If the string is null.
+ */
+function stringnull(s : string) : boolean
+{
+	return isnull(s);
+};
+
+/*
+ * Gets part of a string until cbf returns false.
+ */
+function any_limited(s : string, cbf : char_bool_fn, incr : integer) : string
+{
+	var i, len, start, endd;
+	var t : string;
+
+	len := string_length(s);
+
+	if (len = 0)
+	{
+		return s;
+	};
+
+	if (incr > 0)
+	{
+		start := 0;
+		endd := len - 1;
+	}
+	else if (incr < 0)
+	{
+		start := len - 1;
+		endd := 0;
+	}
+	else
+	{
+		return s;
+	};
+
+	t := s;
+
+	for i := start to endd step incr
+	{
+		if (!cbf(s[i]))
+		{
+			snip(t, i);	
+		}
+	};
+
+	return t;
+};
+
+/*
+ * Gets the left of a string until false is returned by cbf.
+ */
+function left_limited(s : string, cbf : char_bool_fn) : string
+{ 
+        return any_limited(s, cbf, 1);
+};
+
+/*
+ * Gets the right of a string until false is returned by cbf.
+ */
+function right_limited(s : string, cbf: char_bool_fn) : string
+{
+	return any_limited(s, cbf, -1);
+};
+
+/*
+ * Checks if a character is uppercase.
+ */
+function isupper(c : character) : boolean
+{
+	return c >= 'A' && c <= 'Z';
+};
+
+/*
+ * Checks if a character is lowercase.
+ */
+function islower(c : character) : boolean
+{
+	return c >= 'a' && c <= 'z';
+};
+
+/*
+ * Capitalises the first character of a string and returns it.
+ */
+function capitalise(s : string) : string
+{	
+	if (!isnull(s) && string_length(s) > 0)
+	{
+		s[0] := a2A(s[0]);
+	};
+
+	return s;
+};
+
+/*
+ * Finds a pseudo unique hashcode for a string.
+ * This function uses the high order functions fold and foldl.
+ */
+function hashcode(s : string) : integer
+{
+	return foldl(foldlx(s, lambda(x, y, z) => (x | (y << (z << 3))), 0, 4), lambda(x, y, z) => x ^ y);
+};
+
+
+/*
+ * Scrambles a string using ROTXX.
+ * This function uses lambda expressions and string transformation.
+ */
+
+var m_rot_rotations;
+
+function rot(s : string, rotations := 13) : string
+{
+	m_rot_rotations := rotations;
+
+	return string_mapper(s,
+		lambda(c) => (islower(c) ? (((c - 'a' + m_rot_rotations) % 26) + 'a') : 
+					isupper(c) ? (((c - 'A' + m_rot_rotations) % 26) + 'A') : c));
+};
+
+
+function c2i(c : character) : integer
+{
+	return c - '0';
+};
+
+function i2c(c : character) : integer
+{
+	return c + '0';
+};
+
+function characters(c : integer, num : integer) : string
+{
+	retval := new_integer_array(num);
+
+	num--;
+
+	while (num >= 0)
+	{
+		retval[num--] := c;	
+	};
+};
+
+function append_characters(x : string, c : character, num : integer) : string
+{
+	var i := array_length(x);
+
+	while (num > 0)
+	{		
+		x[i++] := c;
+		num--;
+	};
+
+	return x;
+};

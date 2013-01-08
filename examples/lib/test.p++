@@ -1,0 +1,35 @@
+using "opcodes.p++";
+using "string.p++";
+using "stream.p++";
+
+function debug(x : integer) : integer
+{
+	machine_code
+	{		
+		OC_LIT		0		0
+		OC_LOD		%x		x
+		OC_WRT		0		0
+
+		OC_LIT		0		0
+		OC_LIT		0		'\n'
+		OC_WRB		0		0
+	};
+
+	return x;
+};
+
+function test(z : string)
+{
+	println(z);
+};
+
+function main()
+{
+	var s : string = "hello";
+
+	debug(0);
+
+	test(s);
+
+	debug(1);
+};

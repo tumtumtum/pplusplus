@@ -1,0 +1,48 @@
+using "opcodes.p++";
+using "basic_io.p++";
+using "string.p++";
+using "bignumbers.p++";
+
+function big_factorial_tail_aux(x : bignumber, y : bignumber) : bignumber
+{
+	if (x > 1)
+	{
+		return big_factorial_tail_aux(x - 1#, x * y);
+	}
+	else
+	{
+		return y;
+	};
+};
+
+function big_factorial_tail(x : bignumber) : bignumber
+{
+	return big_factorial_tail_aux(x, 1#);
+};
+
+function count(x : bignumber)
+{
+	println(x);
+
+	count(x + 1);
+};
+
+function main(s : string)
+{
+	var c;
+
+	//count(s);
+
+	c := system_clock();
+
+	if (s $= "")
+	{
+		s := "0";
+	};
+
+	println("Computing " + s + "! using tail recursion");
+
+	println("Answer: " + big_factorial_tail(s));
+
+	println("Time taken: " + (system_clock() - c) + " clock cycles");
+};

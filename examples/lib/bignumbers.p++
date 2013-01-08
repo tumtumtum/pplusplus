@@ -1,0 +1,1002 @@
+using "math.p++";
+using "string.p++";
+using "functions.p++";
+
+declare function big_number_is_decimal(x : bignumber) : boolean;
+declare function big_decimal_normalize(x : bignumber) : bignumber;
+declare function big_decimal_sf(x : bignumber) : integer;
+declare function big_number_add(x : bignumber, y : bignumber) : bignumber;
+declare function big_number_sub(x : bignumber, y : bignumber) : bignumber;
+declare function big_number_mul(x : bignumber, y : bignumber) : bignumber;
+declare function big_number_div(x : bignumber, y : bignumber) : bignumber;
+declare function big_number_mod(x : bignumber, y : bignumber) : bignumber;
+declare function big_number_compare(x : bignumber, y : bignumber) : integer;
+declare function big_integer_sub(x : bignumber, y : bignumber) : bignumber;
+
+var m_normalize : boolean = true;
+
+function swap_arrays(ref x : integer[], ref y : integer[])
+{
+	var z : integer[];
+
+	z := x;
+	x := y;
+	y := z;
+};
+
+function print_array(x : integer[])
+{
+	var i, len := array_length(x);
+
+	for i := 0 to len - 1
+	{
+		println(x[i]);
+	};
+};
+
+function big_number_negate(x : bignumber) : bignumber
+{
+	var i, len;
+
+	if (x[0] = '-')
+	{
+		len := array_length(x);
+
+		for i := 1 to len - 1
+		{
+			x[i - 1] := x[i];
+		};
+
+		return x;
+	}
+	else
+	{
+		return "-" + x;
+	};
+};
+
+function big_number_negative(x : bignumber) : boolean
+{
+	return x[0] = '-';
+};
+
+function zipr(x : bignumber, y : bignumber, fn : int_int_int_fn, missing : character = '0', reverse_answer : boolean = true) : bignumber
+{
+	var z : integer[];
+	var top, bottom, carry, result, lenx, leny, i, j, k, swapped : boolean;
+
+	if (array_length(x) < array_length(y))
+	{
+		swapped := true;
+		swap_arrays(ref x, ref y);
+	};
+
+	lenx := array_length(x);
+	leny := array_length(y);
+
+	z := new_integer_array(lenx);
+
+	i := lenx - 1;
+	j := leny - 1;
+	
+	while (i >= 0)
+	{
+		top := x[i];
+		
+		bottom := (j >= 0) ? y[j] : missing;		
+
+		if (swapped)
+		{
+			result := fn(bottom, top);
+		}
+		else
+		{
+			result := fn(top, bottom);
+		};
+
+		z[k++] := result;
+		
+		i--; j--;
+	};
+
+	if (reverse_answer)
+	{
+		reverse(z);
+	};
+
+	return z;
+};
+
+
+function big_integer_normalize(x : bignumber) : bignumber
+{
+	ltrim(x, '0');
+
+	if (array_length(x) = 0)
+	{
+		x[0] := '0';
+	};
+
+	return x;
+};
+
+function big_integer_compare(x : bignumber, y : bignumber) : integer
+{	
+	var lenx, leny;
+
+	lenx := array_length(x);
+	leny := array_length(y);
+
+	if (lenx > leny)
+	{
+		return 1;
+	}
+	else if (lenx < leny)
+	{
+		return -1;
+	}
+	else
+	{
+		return string_compare(x, y);
+	};
+};
+
+function big_integer_morethan(x : bignumber, y : bignumber) : integer
+{
+	return big_integer_compare(x, y) > 0;
+};
+
+function big_integer_lessthan(x : bignumber, y : bignumber) : integer
+{
+	return big_integer_compare(x, y) < 0;
+};
+
+function big_integer_morethan(x : bignumber, y : bignumber) : integer
+{
+	return big_integer_compare(x, y) = 0;
+};
+
+var carry : integer;
+
+function big_integer_add(x : bignumber, y : bignumber) : bignumber
+	function add_aux(x : integer, y : integer) : integer
+	{
+		// Ignore decimal points.
+
+		if (x = '.')
+		{
+			return '.';
+		};
+
+		x := c2i(x);
+		y := c2i(y);
+
+		retval := (x + y + carry);
+		carry := retval / 10;
+		retval := retval % 10;	
+
+		retval := i2c(retval);
+	};
+
+	function add_real(x : bignumber, y : bignumber) : bignumber
+	{
+		carry := 0;
+
+		retval := zipr(x, y, add_aux, , false);
+
+		if (carry != 0)
+		{
+			retval[array_length(retval)] := i2c(carry);
+		};
+
+		reverse(retval);
+		
+		if (m_normalize)
+		{
+			big_integer_normalize(retval);		
+		};
+	};
+{
+	if (big_number_negative(x))
+	{
+		if (big_number_negative(y))
+		{
+			// = (-x) + (-y)
+			// = (-x) - (y)
+			// = -(x + y)
+
+			x[0] := '0';
+			y[0] := '0';
+
+			retval := add_real(x, y);
+			
+			retval[0] := '-';
+
+			x[0] := '-';
+			y[0] := '-';
+		}
+		else
+		{
+			// = (-x) + y
+			// = y - x
+
+			x[0] := '0';
+
+			retval := big_integer_sub(x, y);
+
+			x[0] := '-';
+		};
+	}
+	else
+	{
+		if (big_number_negative(y))
+		{
+			// = (x) + (-y)
+			// = (x) - (y)
+
+			y[0] := '0';
+
+			retval := big_integer_sub(x, y);
+
+			y[0] := '-';
+		}
+		else
+		{
+			// = (x) + (y)
+
+			retval := add_real(x, y);
+		};
+	};
+};
+
+var negative : boolean;
+
+function big_integer_sub(x : bignumber, y : bignumber) : bignumber
+	function sub_aux(x : integer, y : integer) : integer
+	{
+		var nextcarry;
+		
+		if (x = '.')
+		{			
+			return '.';
+		};
+
+		x := c2i(x);
+		y := c2i(y);		
+
+		if (y = -1)
+		{			
+			y:= 0;
+		};
+
+		x := x + 10;
+		
+		//println("x=" + x + "; y=" + y + "; c=" + carry);
+
+		retval := abs(x - y) + carry;
+		
+		//println(retval);
+
+		if (retval >= 10)
+		{
+			nextcarry := 0;
+		}
+		else
+		{
+			nextcarry := -1;
+		};
+
+		retval := i2c(retval % 10);
+
+		carry := nextcarry;
+	};
+
+	function sub_real(x : bignumber, y : bignumber) : bignumber
+	{
+		carry := 0;
+		negative := x < y;		
+		
+		// Temporarily remove leading zeros.
+
+		string_mapper(x, lambda(c) => '0' - 1, lambda(x) => x != '0');
+		string_mapper(y, lambda(c) => '0' - 1, lambda(x) => x != '0');
+		
+		if (negative)
+		{
+			retval := zipr(y, x, sub_aux, '0' - 1, false);
+		}
+		else
+		{
+			retval := zipr(x, y, sub_aux, '0' - 1, false);
+		};
+
+		// Restore leading zeros.
+		
+		string_mapper(x, lambda(c) => '0', lambda(x) => x != '0' - 1);
+		string_mapper(y, lambda(c) => '0', lambda(x) => x != '0' - 1);
+			
+		if (carry > 0)
+		{
+			retval[array_length(retval)] := i2c(carry);
+		};
+		
+		
+
+		// Remove any trailing zeros.
+
+		rtrim(retval, '0');
+		
+		// Make sure that empty numbers contain at least one zero.
+
+		if (array_length(retval) = 0)
+		{
+			retval[0] := '0';
+		};
+
+		// Add the negative sign to the end.
+
+		if (negative)
+		{
+			retval[array_length(retval)] := '-';
+		};
+
+		// Reverse the bignumber to get our completed number!
+
+		reverse(retval);
+	};
+{
+	if (big_number_negative(x))
+	{
+		if (big_number_negative(y))
+		{
+			// = (-x) - (-y)
+			// = (-x) + (y)
+			// = y - x
+
+			retval := sub_real(y, x);
+		}
+		else
+		{
+			// = (-x) - y
+			// = -(x + y)
+
+			x[0] := '0';
+
+			retval := big_integer_add(x, y);
+
+			x[0] := '-';
+
+			retval[0] := '-';
+		};
+	}
+	else
+	{
+		if (big_number_negative(y))
+		{
+			// = (x) - (-y)
+			// = (x + y)
+
+			y[0] := '0';
+
+			retval := big_integer_add(x, y);
+
+			y[0] := '-';
+		}
+		else
+		{
+			// = (x) - (y)
+
+			retval := sub_real(x, y);
+		};
+	};	
+};
+
+var carry : integer;
+
+function big_integer_mul(x : bignumber, y : bignumber) : bignumber
+	function multiply_aux(x : integer, y : integer) : integer
+	{		
+		if (x = '.')
+		{
+			return '.';
+		};
+
+		x := c2i(x);
+		y := c2i(y);
+
+		retval := (x * y + carry);		
+		carry := retval / 10;
+		retval := retval % 10;
+
+		retval := i2c(retval);
+	};
+{	
+	var i, lenx, leny, offset, negative : boolean;
+	var currentline : bignumber, lastline : bignumber;
+
+	carry := 0;
+
+	if (array_length(x) < array_length(y))
+	{
+		// Faster if the bottom array is smaller (less calls to add which allocates new arrays).
+
+		swap_arrays(ref x, ref y);
+	};
+
+	if (big_number_negative(x))
+	{
+		x[0] := '0';
+
+		if (big_number_negative(y))
+		{
+			y[0] := '0';
+			
+			negative := false;
+		}
+		else
+		{
+			negative := true;
+		};
+	}
+	else
+	{
+		if (big_number_negative(y))
+		{
+			y[0] := '0';
+			
+			negative := true;
+		}
+		else
+		{
+			negative := false;
+		};
+	};
+
+	lenx := array_length(x);
+	leny := array_length(y);
+
+	i := leny - 1;
+
+	while (i >= 0)
+	{
+		carry := 0;
+
+		// Multiply the current number in (y + offset zeros) with all the numbers in x[] and add any carry overs.
+
+		currentline := zipr(x, "", multiply_aux, y[i]);
+
+		append_characters(currentline, '0', offset);
+		
+		if (carry != 0)
+		{
+			currentline := i2s(carry) + currentline;
+		};
+						
+		lastline := big_integer_add(currentline, lastline);		
+				
+		i--; offset++;
+	};
+			
+	// Restore the signs.
+
+	if (x[0] = '0')
+	{
+		x[0] := '-';
+	};
+
+	if (y[0] = '0')
+	{
+		y[0] := '-';
+	};
+
+	if (m_normalize)
+	{
+		lastline := big_integer_normalize(lastline);
+	};
+				
+	// Add the sign to the answer.
+	
+	if (negative)
+	{
+		lastline := "-" + lastline;
+	};
+	
+
+	return lastline;
+};
+
+function new_big_number_copy(x : bignumber, len := -1) : string
+{
+	return new_string_copy(x, len);
+};
+
+function big_number_div_mod(x : bignumber, y : bignumber, ref quotient : bignumber, ref remainder : bignumber)
+{
+	var r : bignumber, q : bignumber;
+
+	r := x;
+	
+	while (r >= y)
+	{		
+		r := r - y;
+		
+		q := q + 1;
+	};
+
+	remainder := r;		
+	quotient := q;	
+};
+
+function big_integer_div(x : bignumber, y : bignumber) : bignumber
+{
+	var q : bignumber;
+	var r : bignumber;
+	
+	big_number_div_mod(x, y, q, r);	
+
+	return q;
+};
+
+function big_decimal_remove_point(x : bignumber) : bignumber
+{
+	filter_char(x, '.');
+
+	return x;
+};
+
+function big_number_power(x : bignumber, y : bignumber) : bignumber
+{
+	retval := y;
+
+	retval := x;
+
+	while (y > 0)
+	{		
+		retval := retval * x;
+
+		y := y - 1;
+	};
+};
+
+function big_decimal_div(x : bignumber, y : bignumber) : bignumber
+{
+	var sfx, sfy;
+	var q : bignumber;
+	var r : bignumber;
+	var rev : boolean;
+	
+	big_decimal_normalize(x);
+	big_decimal_normalize(y);
+
+	big_number_div_mod(x, y, q, r);	
+
+	rtrim(y, '0');
+	rtrim(r, '0');
+	ltrim(y, '0');
+	ltrim(r, '0');
+
+	sfx := big_decimal_sf(x);
+	sfy := big_decimal_sf(y);
+	
+	//println("r="+r);
+	//println("y="+y);
+
+	big_decimal_remove_point(y);
+	
+	var p;
+
+	p := (sfx > sfy) ? sfx : sfy;
+
+	p := p + p - 1;
+
+	//println(r);
+
+	rev := r < 1;
+
+	//println(rev);
+
+	//println(r < 0);
+
+	r := r * big_number_power(10#, p);
+	
+	//println("r="+r);
+	//println("y="+y);
+
+	//println(q);
+	
+	x := (string)big_integer_div(r, y);
+		
+	if (rev)
+	{
+		reverse(r);
+	};
+
+	q := q + "." + x;
+	
+	return q;
+};
+
+
+function big_number_div(x : bignumber, y : bignumber) : bignumber
+{	
+	var dx : boolean, dy : boolean;
+	
+	if ((dx := big_number_is_decimal(x)) || (dy := big_number_is_decimal(y)))
+	{
+		if (!dx)
+		{
+			x := x + ".0";
+		};
+		
+		if (!dy)
+		{
+			y := y + ".0";
+		};
+
+		return big_decimal_div(x, y);
+	}
+	else
+	{
+		
+		return big_integer_div(x, y);
+	};
+};
+
+function big_number_mod(x : bignumber, y : bignumber) : bignumber
+{
+	var q : bignumber;
+	var r : bignumber;
+
+	big_number_div_mod(x, y, q, r);	
+
+	return r;
+};
+
+function big_number_is_decimal(x : bignumber) : boolean
+{
+	return string_reverse_find_char(x, '.') >= 0;
+};
+
+function big_number_to_decimal(x : bignumber) : bignumber
+{
+	string_append(x, ".0");
+
+	return x;
+};
+
+function big_decimal_left(x : bignumber) : bignumber
+{
+	var y : bignumber;
+	
+	y := new_string_filter(x, lambda(x) => x != '.', lambda(x) => x = '.');
+
+	if (array_length(y) = 0)
+	{
+		y := 0#;
+	};
+
+	return y;
+};
+
+function big_decimal_right(x : bignumber) : bignumber
+{
+	var y : bignumber;
+	var len := array_length(x);
+
+	y := new_string_filter(x, lambda(x) => x != '.', lambda(x) => x = '.', len - 1, 0);
+
+	if (array_length(y) = len)
+	{
+		// No decimal point.
+
+		y := 0#;
+	};
+
+	return y;
+};
+
+function big_decimal_mul(x : bignumber, y : bignumber) : bignumber
+{
+	var sfx, sfy, sf, wl;
+	var lra : bignumber;
+	var lx : bignumber, ly : bignumber, rx : bignumber, ry : bignumber;
+
+	lx := big_decimal_left(x);
+	ly := big_decimal_left(y);
+
+	rx := big_decimal_right(x);
+	ry := big_decimal_right(y);
+	
+	rtrim(rx, '0');
+	rtrim(ry, '0');
+	
+	sfx := array_length(rx);
+	sfy := array_length(ry);
+
+	if (sfx > sfy)
+	{	
+		sf := sfx;
+		append_characters(ry, '0', sfx - sfy);
+	}
+	else if (sfx < sfy)
+	{		
+		sf := sfy;
+		append_characters(rx, '0', sfy - sfx);		
+	};
+
+	m_normalize := true;
+
+	//println((string)lx + "." + (string)rx);
+	//println((string)ly + "." + (string)ry);
+
+	lra := big_integer_mul((string)lx + (string)rx, (string)ly + (string)ry);
+
+	wl := array_length(lra) - (sf + sf);
+
+	retval := substring(lra, 0, wl) + "." + substring(lra, wl);
+
+	big_decimal_normalize(retval);
+};
+
+function big_number_mul(x : bignumber, y : bignumber) : bignumber
+{
+	var dx : boolean, dy : boolean;
+	
+	if ((dx := big_number_is_decimal(x)) || (dy := big_number_is_decimal(y)))
+	{
+		if (!dx)
+		{
+			x := x + ".0";
+		};
+		
+		if (!dy)
+		{
+			y := y + ".0";
+		};
+
+		return big_decimal_mul(x, y);
+	}
+	else
+	{
+		
+		return big_integer_mul(x, y);
+	};
+};
+
+function big_decimal_normalise_right(ref xr : bignumber, ref yr : bignumber) : integer
+{
+	var xrl, yrl;
+
+	xrl := array_length(xr);
+	yrl := array_length(yr);
+
+	if (xrl > yrl)
+	{
+		yr := yr + characters('0', xrl - yrl);
+
+		return xrl;
+	}
+	else if (xrl < yrl)
+	{		
+		xr := xr + characters('0', yrl - xrl);
+
+		return yrl;
+	}
+	else
+	{
+		return xrl;
+	};
+};
+
+function big_decimal_sf(x : bignumber) : integer
+{
+	var sf, len := array_length(x);
+
+	len--;
+		
+	while (len >= 0)
+	{		
+		if (x[len] = '.')
+		{
+			exit while;
+		};
+		
+		sf++;
+		len--;		
+	};
+
+	if (len = -1)
+	{
+		return 0;
+	};
+
+	return sf;
+};
+
+
+function big_decimal_normalize(x : bignumber) : bignumber
+{
+	var len, y : bignumber;
+
+	if (x[0] = '.')
+	{
+		y := "0" + x;
+		
+		string_copy(y, x);
+	};
+
+	rtrim(x, '0');
+
+	len := array_length(x);
+
+	if (x[len - 1] = '.')
+	{
+		x[len] := '0';
+	};
+
+	return x;
+};
+
+function big_decimal_add(x : bignumber, y : bignumber) : bignumber
+{
+	var sfx, sfy;
+
+	sfx := big_decimal_sf(x);
+	sfy := big_decimal_sf(y);
+
+	if (sfx > sfy)
+	{
+		y := y + characters('0', sfx - sfy);
+	}
+	else if (sfx < sfy)
+	{
+		x := x + characters('0', sfy - sfx);
+	};
+
+	retval := big_decimal_normalize(big_integer_add(x, y));
+};
+
+function big_number_add(x : bignumber, y : bignumber) : bignumber
+{
+	var dx : boolean, dy : boolean;
+
+	if ((dx := big_number_is_decimal(x)) || (dy := big_number_is_decimal(y)))
+	{
+		if (!dx)
+		{
+			x := x + ".0";
+		};
+		
+		if (!dy)
+		{
+			y := y + ".0";
+		};
+
+		return big_decimal_add(x, y);
+	}
+	else
+	{
+		return big_integer_add(x, y);
+	};
+};
+
+function big_decimal_sub(x : bignumber, y : bignumber) : bignumber
+{
+	var sfx, sfy;
+
+	sfx := big_decimal_sf(x);
+	sfy := big_decimal_sf(y);
+
+	if (sfx > sfy)
+	{
+		y := y + characters('0', sfx - sfy);
+	}
+	else if (sfx < sfy)
+	{
+		x := x + characters('0', sfy - sfx);
+	};
+
+	if (x < y)
+	{
+		retval := big_decimal_normalize(big_integer_sub(y, x));
+		retval := "-" + retval;
+	}
+	else
+	{
+		retval := big_decimal_normalize(big_integer_sub(x, y));
+	};
+};
+
+function big_number_sub(x : bignumber, y : bignumber) : bignumber
+{
+	var dx : boolean, dy : boolean;
+
+	if ((dx := big_number_is_decimal(x)) || (dy := big_number_is_decimal(y)))
+	{
+		if (!dx)
+		{
+			x := x + ".0";
+		};
+		
+		if (!dy)
+		{
+			y := y + ".0";
+		};
+
+		return big_decimal_sub(x, y);
+	}
+	else
+	{
+		return big_integer_sub(x, y);
+	};
+};
+
+
+function big_number_compare(x : bignumber, y : bignumber) : integer
+{
+	var xd : boolean, yd : boolean;
+
+	if ((xd := big_number_is_decimal(x)) || (yd := big_number_is_decimal(y)))
+	{		
+		var r, xl : biginteger, yl : biginteger;
+
+		if (xd)
+		{
+			xl := big_decimal_left(x);			
+		}
+		else
+		{
+			xl := new_string_copy(x);
+		};
+
+		if (yd)
+		{
+			yl := big_decimal_left(y);
+		}
+		else
+		{
+			yl := new_string_copy(y);
+		};
+
+		ltrim(xl, '0');
+		ltrim(yl, '0');
+
+		//println(xl);
+		//println(yl);
+		
+		r := big_integer_compare(xl, yl);
+		
+		if (r != 0)
+		{			
+			return r;
+		};
+
+		if (xd)
+		{
+			xl := big_decimal_right(x);
+		}
+		else
+		{
+			xl := 0#;
+		};
+
+		if (yd)
+		{
+			yl := big_decimal_right(y);
+		}
+		else
+		{
+			yl := 0#;
+		};
+
+		big_decimal_normalise_right(ref xl, ref yl);
+				
+		r := big_integer_compare(xl, yl);
+
+		return r;
+	}
+	else
+	{
+		return big_integer_compare(x, y);
+	};
+};

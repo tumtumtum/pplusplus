@@ -1,0 +1,36 @@
+using "stream.p++";
+using "string.p++";
+
+function zigzag(s : string) : string
+{
+	var i, len := string_length(s);
+
+	retval := s;
+
+	if (len <= 0)
+	{
+		return s;
+	};
+
+	for i := 0 to len - 1
+	{
+		if (i % 2 != 0)
+		{
+			s[i] := a2A(s[i]);
+		}
+		else
+		{
+			s[i] := A2a(s[i]);
+		};
+	};
+};
+
+function main() : integer
+{
+	var s : string;
+
+	while (!(to_lower(s) $= "stop"))
+	{
+		println(zigzag(s := readln()));
+	};
+};

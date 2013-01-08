@@ -1,0 +1,150 @@
+/*
+ * @file stream.p++
+ *
+ * Stream functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+include "lang.p++";
+include "array.p++";
+include "opcodes.p++";
+
+const EOS =	-1;
+const STDOUT = 0;
+const STDIN = 0;
+
+/*
+ * Type declarations
+ */
+type stream : integer;
+
+/*
+ * Predeclarations.
+ */
+declare function reader_fn(z : stream) : integer;
+
+function write_byte(x : integer, z : stream = 0) : integer
+{
+	machine_code
+	{	
+		OC_LOD		%z		z
+		OC_LOD		%x		x
+		OC_WRB		0		0		
+	};
+
+	return x;
+};
+
+function read_byte(z : stream = 0) : integer
+{
+	machine_code
+	{	
+		OC_LOD		%z		z
+		OC_REB		0		0
+		OC_SRV		0		1
+	};
+};
+
+function write_char(x : character, z : stream = 0)
+{
+	machine_code
+	{	
+		OC_LOD		%z		z
+		OC_LOD		%x		x
+		OC_WCH		0		0
+	};
+
+	return x;
+};
+
+function read_char(z : stream = 0) : character
+{
+	machine_code
+	{	
+		OC_LOD		%z		z
+		OC_RCH		0		0
+		OC_SRV		0		1
+	};
+};
+
+function write_integer(x : integer, z : stream = 0) : integer
+{	
+	machine_code
+	{
+		OC_LOD		%z		z
+		OC_LOD		%x		x		
+		OC_WRT		0		0
+	};
+
+	return x;
+};
+
+function write_float(x : float, z : stream = 0) : float
+{
+	machine_code
+	{		
+		OC_LOD		%z		z
+		OC_LOD		%x		x
+		OC_WRF		0		0		
+	};
+
+	return x;
+};
+
+function print(s : string = "", z : stream = 0) : string
+	var i, len;
+{
+	if (isnull(s))
+	{
+		return s;
+	};
+
+	if ((len := array_length(s)) > 0)
+	{
+		pragma boundary_check off;
+		
+		for i := 0 to len - 1
+		{
+			write_byte(s[i], z);
+		};
+
+		pragma boundary_check on;
+	};
+
+	return s;
+};
+
+function println(s : string, z : stream = 0) : string
+{
+	print(s, z);
+	write_byte('\n', z);
+
+	return s;
+};
+
+function readln(z : stream = 0) : string
+	var i, c, s : string, reader : reader_fn;
+{
+	if (z = 0)
+	{
+		reader := read_char;
+	}
+	else
+	{
+		reader := read_byte;		
+	};
+
+	while ((c := reader(z)) != EOS && !(c = '\r' || c = '\n'))
+	{
+		s[i++] := c;
+	};
+
+	if (i = 0 && c = EOS)
+	{
+		return null;
+	};
+
+	return s;
+};

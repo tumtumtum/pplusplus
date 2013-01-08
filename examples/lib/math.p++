@@ -1,0 +1,184 @@
+/*
+ * @file math.p++
+ *
+ * Math functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+using "lang.p++";
+using "basic_time.p++";
+
+const PI : float = 3.1415926535;
+const DEGREES_PER_RADIAN : float = 57.2957795131;
+
+/*
+ * Converts a floating point number into an integer with rounding.
+ */
+function round(x : float) : integer
+{
+	return f2i(x + 0.5);
+};
+
+/*
+ * Calculates the factorial of x using recursion.
+ */
+function factorial(x : integer) : integer
+{
+	return (x > 1) ? x * factorial(x - 1) : 1;	
+};
+
+/**
+
+/*
+ * Test tail recursive factorial.
+ */
+function factorial_tail_aux(x, y)
+{
+	if (x > 0)
+	{
+		return factorial_tail_aux(x - 1, y * x);
+	}
+	else
+	{
+		return y;
+	};	
+};
+
+function factorial_tail(x)
+{
+	return factorial_tail_aux(x, 1);
+};
+
+**/
+
+
+/*
+ * Calculates x raised to the power of y.
+ */
+function power(x : float, y : integer) : float
+	var i;
+{
+	if (y = 0)
+	{
+		return 1;
+	};
+
+	if (y = 1)
+	{
+		return x;
+	};
+
+	retval := x;
+
+	for i := 2 to y
+	{
+		
+		retval *= x;		
+	};
+};
+
+var m_random_seed := 0x5886;
+
+/*
+ * Seeds the random number generator.
+ */
+function randomize(seed : integer = 0) : integer
+{
+	if (seed = 0)
+	{
+		seed := system_time() + system_clock() % 513;
+	};
+
+	return m_random_seed := seed;
+};
+
+/*
+ * Generates a random number.
+ */
+function random(max : integer) : integer
+{
+//	m_random_seed := abs(41279 * m_random_seed) % 9836767;
+	m_random_seed := abs(0x10003 * m_random_seed) % 0x80000000;
+
+	return m_random_seed % (max + 1);
+};
+
+/*
+ * Calculates the cosine of x using the taylor/malcorian series.
+ */
+function cos(x : float) : float
+	var k, a : float, n, t;
+
+	function reduce(x : float, ref t) : float
+	{				
+		while (x > PI)
+		{	
+			x -= PI;
+			t++;
+		};
+
+		return x;
+	};
+{	
+	if (x < 0)
+	{
+		x := -x;
+		n := true;
+	};
+	
+	/*
+	 * Reduce limits the argument from 0 - PI.
+	 * Since PI only makes half a cycle, t is used to see which direction
+	 * the cycle was currently in.
+	 */
+
+	x := reduce(x, t);
+
+	for k := 0 to 7
+	{
+		a += power(-1, k) * power(x, k * 2) / (factorial(k * 2));
+	};
+
+	if (t % 4)
+	{
+		a := -a;		
+	};
+
+	return a;
+};
+
+/*
+ * Calculates the sine of x using the taylor/malcorian series.
+ */
+function sin(x : float) : float
+{
+	return -cos(x + PI / 2);
+};
+
+/*
+ * Calculates the tangent of x using the taylor/malcorian series.
+ */
+function tan(x : float) : float
+{
+	return (sin(x) / cos(x));
+};
+
+/*
+ * Static initializer.  Randomizes the random generator based on the system time.
+ */
+function static_init()
+{
+	randomize();
+};
+
+function add(x, y)
+{
+	return x + y;
+};
+
+function multiply(x, y)
+{
+	return x * y;
+};

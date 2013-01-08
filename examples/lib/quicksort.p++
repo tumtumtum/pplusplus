@@ -1,0 +1,112 @@
+/*
+ * quicksort.p++
+ *
+ * Quicksort for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+include "io.p++";
+include "array.p++";
+include "math.p++";
+include "time.p++";
+include "string.p++";
+
+function quicksort(data : integer[], first, last)
+	var pivot;
+
+	function partition(data : integer[], first, last)
+		var i, j, x, p;
+	{
+
+/*
+ * Turn off array boundary checking.
+ */
+pragma boundary_check 0;
+
+		i := first;
+		j := last + 1;
+		p := (first + last) / 2;
+
+		/*
+		 * Choose a median pivot.
+		 */	
+
+		x := data[p];
+		data[p] := data[i];
+		data[i] := x;
+		
+		while (i < j)
+		{
+			do
+			{
+				j--;
+
+				if (i = j) then goto bend;
+			}
+			while (data[j] > x);
+
+			data[i] := data[j];
+
+			do
+			{
+				i++;
+
+				if (i = j) then goto bend;
+			}
+			while (data[i] < x);
+			
+			data[j] := data[i];
+		};
+
+		bend:
+
+		data[i] := x;
+
+/*
+ * Turn on array boundary checking.
+ */
+pragma boundary_check 1;
+
+		return i;
+	};
+{	
+	if (first < last)
+	{
+		pivot := partition(data, first, last);
+
+		quicksort(data, first, pivot - 1);
+		quicksort(data, pivot + 1, last);
+	};
+};
+
+var i, j, size;
+var clk1, clk2;
+
+var data : integer[..];
+
+main
+{	
+	randomize(system_time());
+
+	size := 10000;
+
+	for i := 0 to size - 1
+	{
+		data[i] := random(1000);
+	};
+
+	clk1 := system_clock();
+
+	quicksort(data, 0, size - 1);
+
+	clk2 := system_clock();
+
+	for i := 0 to size - 1
+	{
+		//write(data[i]);
+	};
+	
+	println("Time taken: " + (i2f(clk2 - clk1) / CLOCKS_PER_SEC) + " clocks");
+};

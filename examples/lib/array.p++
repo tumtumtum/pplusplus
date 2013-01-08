@@ -1,0 +1,421 @@
+/*
+ * @file array.p++
+ *
+ * Array functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+using "basic_io.p++";
+using "lang.p++";
+using "opcodes.p++";
+using "registers.p++";
+using "memory.p++";
+
+/*
+ * [memory refcount][reserved][array length][reserved]
+ */
+
+/* 
+ * Array header offsets.
+ */
+const ARRAY_LENGTH_OFFSET = 0x2;
+
+/*
+ * The size an array grows by.
+ */
+const ARRAY_RESOLUTION = 0x100;
+
+/*
+ * Size of an array header. 
+ */
+const ARRAY_HEADER_SIZE = 0x4;
+
+/*
+ * @returns The length of the array.
+ */
+function array_length(array_handle : handle) : integer
+{	
+	if (!isnull(array_handle))
+	{
+		machine_code
+		{	
+			/*
+			 * Load the array length on the stack.
+			 */
+			OC_SRG		ARRAY_LENGTH_OFFSET	REG_CX
+			OC_MLO		%array_handle		array_handle
+
+			/*
+			 * Set the return value to the array length.
+			 */
+			OC_SRV		0					1
+		};
+	}
+	else
+	{
+		return -1;
+	};
+};
+
+/*
+ * Sets the length counter of the array.
+ */
+function __set_array_length(array_handle : handle, length) : integer
+{
+	if (!isnull(array_handle))
+	{		
+		machine_code
+		{
+			/*
+			 * Load the new length.
+			 */
+			OC_LOD		%length				length
+							
+			/*
+			 * Load the offset of the array length into CX.
+			 */
+			OC_SRG		ARRAY_LENGTH_OFFSET	REG_CX
+
+			/*
+			 * Store the new array length.
+			 */
+			OC_MST		%array_handle		array_handle
+		};
+
+		return length;
+	}
+	else
+	{
+		return -1;
+	};
+};
+
+/*
+ * Called every time an array element is read or written to make sure
+ * the array's size is large enough.
+ */
+function __array_check(array_handle : handle, index)
+{
+	/*
+	 * Add one to the index to get the size.
+	 */
+	if (isnull(array_handle))
+	{
+		return 0;
+	};
+
+	index++;
+
+	if (__memory_size(array_handle) < (index + ARRAY_HEADER_SIZE))
+	{
+		machine_code
+		{	
+			/*
+			 * Load the array handle.
+			 */
+			OC_LOD		%array_handle		array_handle	
+
+			/*
+			 * Load the size wanted and add a wee bit more.
+			 */
+			OC_LOD		%index				index
+			OC_LIT		0					ARRAY_RESOLUTION 
+			OC_OPR		0					OPR_ADD
+			OC_LIT		0					ARRAY_HEADER_SIZE
+			OC_OPR		0					OPR_ADD
+			
+			/*
+			 * Reallocate the array.
+			 */
+			OC_RAL		0					0
+		};
+	};
+
+	if (array_length(array_handle) < index)
+	{
+		__set_array_length(array_handle, index);
+	};
+};
+
+/*
+ * Reduces the size of the array to the given length.
+ * Can be used increase the size of the array as well.
+ *
+ * @returns The array handle.
+ */
+function array_snip(array_handle : handle, length) : handle
+{
+	if (array_handle = null)
+	{
+		return array_handle;
+	};
+
+	machine_code
+	{	
+		OC_LOD		%array_handle		array_handle
+		/*
+		 * Load the size wanted
+		 */
+		OC_LOD		%length				length
+		OC_LIT		0					ARRAY_HEADER_SIZE
+		OC_OPR		0					OPR_ADD
+				
+		/*
+		 * Reallocate the array.
+		 */		
+		OC_RAL		0					0
+	};
+
+	__set_array_length(array_handle, length);
+
+	return array_handle;
+};
+
+/*
+ * Creates a new array of length size, each element can have a specified size.
+ *
+ * @param	length			Length of the array.
+ * @param	element_size	Size of each array element (in integers e.g. 32bits).
+ */
+function new_array(length = 0, element_size = 1) : array
+	var newarray : integer[];
+{	
+	machine_code
+	{
+		OC_LIT		0				ARRAY_HEADER_SIZE
+		OC_LOD		%length			length
+		OC_LOD		%element_size	element_size
+		OC_OPR		0				OPR_MUL
+		OC_OPR		0				OPR_ADD
+		OC_MAL		0				0
+		OC_STO		%newarray		newarray
+	};
+	
+	__set_array_length(newarray, length);	
+	__memory_addref(newarray);
+			
+	return newarray;
+};
+
+/*
+ * @returns A new integer array of specified initial length.
+ */
+function new_integer_array(length = 0) : integer[]
+	var newarray : integer[];
+{	
+	machine_code
+	{
+		OC_LIT		0				ARRAY_HEADER_SIZE
+		OC_LOD		%length			length
+		OC_OPR		0				OPR_ADD
+		OC_MAL		0				0
+		OC_STO		%newarray		newarray
+	};
+	
+	__set_array_length(newarray, length);	
+	__memory_addref(newarray);
+			
+	return newarray;
+};
+
+/*
+ * @returns A new float array of specified initial length.
+ */
+function new_float_array(length = 0) : float[]
+	var newarray : float[];
+{
+	machine_code
+	{
+		OC_LIT		0				ARRAY_HEADER_SIZE
+		OC_LOD		%length			length
+		OC_OPR		0				OPR_ADD
+		OC_MAL		0				0
+		OC_STO		%newarray		newarray
+	};
+
+	__set_array_length(newarray, length);
+
+	__memory_addref(newarray);
+
+	return newarray;
+};
+
+/*
+ * @returns A new array that's a copy of the supplied array.
+ */
+function new_array_copy(source : array, len := -1) : array
+	var i, new_array : integer[];
+{
+	if (len = -1 || len > array_length(source))
+	{
+		len := array_length(source);
+	};
+
+	new_array := new_integer_array(len);
+	
+	if (len > 0)
+	{
+		machine_code
+		{
+			OC_LOD		%new_array				new_array			
+			OC_LIT		0					ARRAY_HEADER_SIZE
+			OC_LOD		%source				source				
+			OC_LIT		0					ARRAY_HEADER_SIZE
+			OC_LOD		%len					len
+			OC_MCP		0					0
+		};
+	};
+	
+	return new_array;
+};
+
+/*
+ * @returns A new integer array that's a copy of the supplied array.
+ */
+function new_integer_array_copy(source : integer[], len := -1) : integer[]
+{
+	return new_array_copy(source, len);
+};
+
+/*
+ * @returns A new integer array that's a copy of the supplied array.
+ */
+function new_float_array_copy(source : float[]) : float[]
+{
+	return new_array_copy(source);	
+};
+
+/*
+ * Appends one array to another array.
+ */
+function array_append(destination : array, source : array) : array
+	var i, source_len, destination_len;	
+{
+	source_len := array_length(source);
+	destination_len := array_length(destination);
+
+	array_snip(destination, destination_len + source_len);
+
+	if (source_len > 0)
+	{	
+		/*
+		 * Originally done with a for loop, but now I'm doing
+		 * it with a memory copy using assembly cause it's faster.
+		 */	
+		machine_code
+		{
+			OC_LOD		%destination		destination
+			OC_LOD		%destination_len	destination_len
+			OC_LIT		0					ARRAY_HEADER_SIZE		
+			OC_OPR		0					OPR_ADD
+			OC_LOD		%source				source				
+			OC_LIT		0					ARRAY_HEADER_SIZE			
+			OC_LOD		%source_len			source_len			
+			OC_MCP		0					0
+		};		
+	};
+
+	return destination;
+};
+
+/*
+ * Appends one integer array to another array.
+ */
+function integer_array_append(destination : integer[], source : integer[]) : integer[]
+{
+	return array_append(destination, source);
+};
+
+/*
+ * Appends one float array to another array.
+ */
+function float_array_append(destination : float[], source : integer[]) : float[]
+{
+	return array_append(destination, source);
+};
+
+/*
+ * Compares the contents of two arrays.
+ */
+function array_compare(s1 : array, s2 : array) : integer
+	var i, len, len1, len2;
+{
+	len1 := array_length(s1);
+	len2 := array_length(s2);
+
+	pragma boundary_check off;
+
+	len := (len1 < len2) ? len1 : len2;
+
+	if (len > 0)
+	{
+		for i := 0 to len - 1
+		{			
+			if (s1[i] != s2[i])
+			{
+				return s1[i] - s2[i];
+			};
+		};
+	};
+
+	if (len1 < len2)
+	{
+		return -s2[len1];
+	}
+	else if (len2 < len1)
+	{
+		return s1[len2];
+	};
+
+	pragma boundary_check on;
+
+	return 0;
+};
+
+/*
+ * Compares the contents of two integer arrays.
+ */
+function integer_array_compare(s1 : integer[], s2 : integer[]) : integer
+{
+	return array_compare(s1, s2);
+};
+
+/*
+ * Compares the contents of two float arrays.
+ */
+function float_array_compare(s1 : float[], s2 : float[]) : integer
+{
+	return array_compare(s1, s2);
+};
+
+/*
+ * Finds an integer in an array.
+ *
+ * @returns 0 based index of the integer in the array.
+ *			or -1 if the integer was not found.
+ */
+function array_find_integer(ax : integer[], x : integer) : integer
+{
+	var len;
+
+	if ((len := array_length(ax)) > 0)
+	{
+		pragma boundary_check off;
+
+		var i;
+		
+		for i := 0 to len - 1
+		{		
+			if (ax[i] = x)
+			{				
+				return i;
+			};
+		};
+
+		pragma boundary_check on;
+	};
+
+	return -1;
+};

@@ -1,0 +1,9 @@
+include "stream.p++";
+include "time.p++";
+
+function main() : integer
+{
+  var time : integer = system_time();
+  
+	println(date_to_string(time) + " " + time_to_military(time));
+};

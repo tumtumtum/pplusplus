@@ -1,0 +1,39 @@
+include "array.p++";
+include "string.p++";
+include "stream.p++";
+include "file.p++";
+include "cgi.p++";
+include "time.p++";
+
+var i, f : stream;
+
+declare function bar(c : character) : character;
+
+function foo(s: string, f : bar) : string
+{
+	s[0] := f(s[0]);
+
+	return new_string_copy(s);
+};
+
+function main() : integer
+{
+	var i;
+	
+	// Print the HTTP header.
+	println(cgi_plain_http_header());
+
+	println("<html>");
+	println("<title>P++ with CGI</title>");
+	println("The date is: " + date_to_string(system_time()) + "<br><br>");
+
+	println("Hello there<br><br>");
+
+	for i := 100 to 0 step -1
+	{
+		println(foo("hello: " + i, lambda(x) => x - 32) + "<br>");
+	};
+	
+
+	println("</html>");
+};

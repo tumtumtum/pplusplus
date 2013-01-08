@@ -1,0 +1,46 @@
+using "array.p++";
+using "stream.p++";
+using "functions.p++";
+
+declare function foldlx(a : integer[], fn : int_int_int_int_fn, start := 0, groupsize := 0) : integer[];
+        
+function foldl(a : integer[], fn : int_int_int_int_fn, start := 0) : integer
+{
+    var i, len;
+
+    retval := start;
+
+    if (len := -1)
+    {
+            len := array_length(a);
+    };
+
+    for i := 0 to len - 1
+    {
+		retval := fn(retval, a[i], i);
+    };
+};
+
+function foldlx(a : integer[], fn : int_int_int_int_fn, start := 0, groupsize := 0) : integer[]
+{
+	var i, j, k, x, len;
+	var b : integer[..];
+	
+	len := array_length(a);
+
+	while (i < len)
+	{
+		j := 1;
+		x := fn(start, a[i++], i);
+
+		while (i < len && j < groupsize)
+		{
+			x := fn(x, a[i], i);
+			i++; j++;
+		};
+
+		b[k++] := x;
+	};
+
+	return b;
+};

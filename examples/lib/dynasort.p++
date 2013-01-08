@@ -1,0 +1,68 @@
+using "math.p++";
+using "string.p++";
+using "stream.p++";
+
+function dynasort(arr : integer[])
+{
+	var i, j, k, max;
+	var counts : integer[..];
+
+	max := array_length(arr) - 1;
+
+	for i := 0 to max
+	{
+		counts[arr[i]]++;
+	};
+
+	k := 0;
+
+	max := array_length(counts) - 1;
+
+	for i := 0 to max
+	{
+		if (counts[i] > 0)
+		{
+			for j := 1 to counts[i]
+			{
+				arr[k++] := i;
+			};
+		};
+	};
+};
+
+function main(s : string)
+{
+	var i, size;
+	var A : integer[..];
+
+	size := (integer)s;
+
+	randomize();
+
+	if (size = 0)
+	{
+		print("Need to specify a size.\n");
+
+		return 0;
+	};
+
+	println("Generating " + size + " random numbers...");
+
+	for i := 0 to size - 1
+	{
+		A[i] := random(1000);
+	};
+
+	println("Dynasorting...");
+
+	dynasort(A);
+
+	println("Done.\nPress any key to see numbers.");
+
+	readln();
+
+	for i := 0 to size - 1
+	{
+		println(A[i]);
+	};
+};

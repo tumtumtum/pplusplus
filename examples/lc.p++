@@ -1,0 +1,47 @@
+using "file.p++";
+using "stream.p++";
+
+function help()
+{
+	println("Line Count\n");
+	println("Usage: lc <filename>");
+};
+
+function main(args : string)
+{	
+	if (args $= "")
+	{
+		help();
+
+		return;
+	};
+	
+	var count : integer;
+	var f : stream, c : character, lastc : character;
+
+	f := f_open(args, F_READ);
+
+	repeat
+	{
+		if ((c := read_byte(f)) = EOS)
+		{
+			exit repeat;
+		};
+
+		if (c = '\r')
+		{
+			count++;
+		};
+
+		if (c = '\n' && lastc != '\r')
+		{
+			count++;
+		};
+
+		lastc := c;
+	};
+
+	f_close(f);
+
+	println("Line Count: " + count);
+};

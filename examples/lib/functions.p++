@@ -1,0 +1,17 @@
+/*
+ * Declarations for function pointers and lambda expressions.
+ */
+declare function char_bool_fn(char : character) : boolean;
+declare function char_char_fn(char : character) : character;
+declare function int_int_int_fn(x : integer, y : integer) : integer;
+declare function int_int_int_int_fn(x : integer, y : integer, z : integer) : integer;
+
+function alwaystrue(c : character) : boolean
+{
+	return true;
+};
+
+function alwaysfalse(c : character) : boolean
+{
+	return false;
+};

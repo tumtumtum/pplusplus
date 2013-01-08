@@ -1,0 +1,64 @@
+using "file.p++";
+using "stream.p++";
+
+function help()
+{
+	println("Word Count\n");
+	println("Usage: wc <filename>");
+};
+
+function main(args : string)
+{
+	var i, j;
+	var f : stream, s : string, count;
+
+	if (args $= "")
+	{
+		help();
+
+		return;
+	};
+
+
+	var found : boolean;
+
+	f := f_open(args, F_READ);
+
+	repeat
+	{
+		// readln returns null if the end of stream has been reached.
+
+		if ((s := readln(f)) = null)
+		{
+			exit repeat;
+		};
+		
+		println(s);
+
+		if (trim(s) $= "")
+		{
+			continue;
+		};
+
+		found := false;
+	
+		for i := 0 to string_length(s) - 1
+		{
+			if (s[i] = ' ' || s[i] = '\n')
+			{
+				while (s[i] = ' ' || s[i] = '\n')
+				{
+					i++;		
+				};
+				i--;
+				count++;
+
+				found := true;
+			};
+		};
+
+		count++;
+	};
+
+	println("Word Count: " + count);
+};

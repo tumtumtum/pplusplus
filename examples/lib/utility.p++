@@ -1,0 +1,12 @@
+function print_array(a : integer[])
+{
+	var i, len := array_length(a);
+
+	if (len > 0)
+	{
+		for i := 0 to len - 1
+		{
+			println(a[i]);
+		};
+	};
+};

@@ -1,0 +1,19 @@
+using "opcodes.p++";
+
+function system_time() : integer
+{
+	machine_code
+	{
+		OC_TME		0		0
+		OC_SRV		0		1
+	};
+};
+
+function system_clock() : integer
+{
+	machine_code
+	{
+		OC_CLK		0		0
+		OC_SRV		0		1
+	};
+};

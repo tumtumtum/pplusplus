@@ -1,0 +1,32 @@
+/*
+ * @file langs.p++
+ *
+ * Extended language functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+include "lang.p++";
+include "array.p++";
+
+/*
+ * Returns the command line as a string
+ */
+function command_line() : string
+	var len, newarray : handle;
+{
+	machine_code
+	{
+		OC_SRG		ARRAY_HEADER_SIZE	REG_CX
+		OC_CLI		0			0
+		OC_STO		%len		len
+		OC_STO		%newarray	newarray
+	};
+
+	__set_array_length(newarray, len);
+
+	__memory_addref(newarray);
+
+	return newarray;
+};

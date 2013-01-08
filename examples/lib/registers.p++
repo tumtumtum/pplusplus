@@ -1,0 +1,9 @@
+const REG_AX = 0x1;
+const REG_BX = 0x2;
+const REG_CX = 0x3;
+const REG_DX = 0x4;
+
+/*
+ * DX flag for switching the PL/0 machine into memory mode.
+ */
+const REG_MEMORY_FLAG = 0x4;

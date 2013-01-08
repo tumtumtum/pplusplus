@@ -1,0 +1,332 @@
+/*
+ * @file time.p++
+ *
+ * Time functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+
+using "array.p++";
+using "string.p++";
+using "basic_time.p++";
+
+
+/*
+ * These algorithms for Unix time are ported from Microsoft's C runtime sources.
+ *
+ * @file	time.p++
+ * @see		msdn.microsoft.com
+ */
+
+/*
+ * Days of the week.
+ */
+const SUNDAY = 1;
+const MONDAY = 2;
+const TUESDAY = 3;
+const WEDNESDAY = 4;
+const THURSDAY = 5;
+const FRIDAY = 6;
+const SATURDAY = 7;
+
+/*
+ * Months of the year.
+ */
+const JANUARY = 1;
+const FEBRUARY = 2;
+const MARCH = 3;
+const APRIL = 4;
+const MAY = 5;
+const JUNE = 6;
+const JULY = 7;
+const AUGUST = 8;
+const SEPTEMBER = 9;
+const OCTOBER = 10;
+const NOVEMBER = 11;
+const DECEMBER = 12;
+
+
+const FIRST_DOW = MONDAY;
+const DAY_SEC = 86400; /* Seconds in a day */
+const YEAR_SEC = 31536000; /* Seconds in a year (with 365 days a year) */
+const FOUR_YEAR_SEC = 126230400; /* Seconds in four years (with 365.25 days a year) */
+const BASE_DOW = 4; /* 01-01-70 was a Thursday */
+const CLOCKS_PER_SEC = 1000;
+
+
+
+var m_days : integer[] = {-1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 364};
+var m_leap_days : integer[] = {-1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+
+/*
+ * Gets the system time and returns thru the reference variables the
+ * components of the time.
+ *
+ * This doesn't make use of global variables, but rather takes the slower approach
+ * of optional reference parameters - this is to demonstrate optional parameters 
+ * and also optional reference parameters.
+ */
+function time_components(time : integer = -1, ref year = null, ref year_day = null, ref month = null, 
+	ref month_day = null, ref week_day = null, ref hours = null, ref minutes = null, ref seconds = null) : integer
+
+	var m_year, m_year_day, m_month, m_month_day, m_week_day, m_hours, m_minutes, m_seconds;
+
+	var days : integer[];
+	var originaltime, tmptim, isleap;	
+{
+	if (time = -1)
+	{
+		time := system_time();
+	};
+
+	originaltime := time;
+
+	tmptim := time / FOUR_YEAR_SEC;
+	time -= tmptim * FOUR_YEAR_SEC;
+
+	tmptim := (tmptim * 4) + 70; /* 1970, 1974, 1978.... */
+	
+	if (time >= YEAR_SEC)
+	{		
+		tmptim++; /* 1971, 1975, 1979.... */
+
+		time -= YEAR_SEC;
+
+		if (time >= YEAR_SEC) then /* 1972, 1975, 1979.... */
+		{
+			tmptim++;
+			time -= YEAR_SEC;
+
+			/*
+			 * @note: It takes 366 days-worth of seconds to get past a leap year.
+			 */
+			if (time >= (YEAR_SEC + DAY_SEC)) then
+			{
+				tmptim++; /* 1973, 1977, 1981.... */
+				time -= (YEAR_SEC + DAY_SEC);
+			}
+			else
+			{
+				/*
+				 * In a leap year after all, set the flag.
+				 */
+				 isleap++;
+			};
+		};
+	};
+
+	m_year := tmptim + 1900; /* year */
+	m_year_day := time / DAY_SEC; /* days since janurary */
+	time -= m_year_day * DAY_SEC:
+
+	/*
+	 * Determine months since janurary (0 - 11) and day of the month (1 - 31)
+	 */
+
+	if (isleap)
+	{
+		days := m_leap_days;
+	}
+	else
+	{
+		days := m_days;
+	};
+
+	tmptim := 1;
+
+	while (days[tmptim] < m_year_day) do tmptim++;
+	
+	m_month := --tmptim;
+	m_month_day := m_year_day - days[tmptim];
+
+	m_hours := time / 3600;
+	time -= m_hours * 3600;
+	
+	m_minutes := time / 60;
+	m_seconds := time - m_minutes * 60;
+
+	/*
+	 * Determine days since Sunday (0 - 6)
+	 */
+	 m_week_day := (originaltime / DAY_SEC + BASE_DOW + (FIRST_DOW - 1)) % 7;
+
+	/*
+	 * Fix the month and weekday (which is 0 based).
+	 */
+	 m_month++;
+	 m_week_day++;
+	
+	 if (!ismissing(year))
+	 {
+		year := m_year;
+	 };
+
+	 if (!ismissing(year_day))
+	 {
+		year_day := m_year_day;
+	 };
+
+	 if (!ismissing(month))
+	 {		
+		month := m_month;
+	 };
+
+	 if (!ismissing(month_day))
+	 {		
+		month_day := m_month_day;
+	 };
+
+	 if (!ismissing(week_day))
+	 {
+		week_day := m_week_day;		
+	 };
+
+	 if (!ismissing(hours))
+	 {
+		hours := m_hours;
+	 };
+
+	 if (!ismissing(minutes))
+	 {
+		minutes := m_minutes;
+	 };
+
+	 if (!ismissing(seconds))
+	 {
+		seconds := m_seconds;
+	 };	
+};
+
+function year(time : integer = -1) : integer
+	var year;
+{
+	time_components(time, year);
+
+	return year;
+};
+
+function year_day(time : integer = -1) : integer
+	var year_day;
+{
+	time_components(time, , year_day);
+	
+	return year_day;
+};
+
+function month(time : integer = -1) : integer
+	var month;
+{
+	time_components(time, , , month);
+
+	return month;
+};
+
+function month_day(time : integer = -1) : integer
+	var month_day;
+{
+	time_components(time, , , , month_day);
+
+	return month_day;
+};
+
+function week_day(time : integer = -1) : integer
+	var week_day;
+{
+	time_components(time, , , , , week_day);
+
+	return week_day;
+};
+
+function hours(time : integer = -1) : integer
+	var hours;
+{
+	time_components(time, , , , , , hours);
+
+	return hours;
+};
+
+function minutes(time : integer = -1) : integer
+	var minutes;
+{
+	time_components(time, , , , , , , minutes);
+
+	return minutes;
+};
+
+function seconds(time : integer = -1) : integer
+	var seconds;
+{
+	time_components(time, , , , , , , , seconds);
+
+	return seconds;
+};
+
+function pad0(s : string) : string
+{
+	if (string_length(s) < 2)
+	{
+		s := "0" + s;
+	};
+
+	return s;
+};
+
+function time_to_military(time : integer = -1) : string
+	var hours, minutes, seconds;
+{
+	time_components(time, , , , , , hours, minutes, seconds);
+
+	return pad0(hours) + ":" + pad0(minutes) + ":" + pad0(seconds);
+};
+
+function get_month_name(month : integer) : string
+{
+	which (month)
+	{
+		case JANUARY:
+			retval := "january";
+		case FEBRUARY:			
+			retval := "february";
+		case MARCH:			
+			retval := "march";
+		case APRIL:
+			retval := "april";
+		case MAY:
+			retval := "may";
+		case JUNE:
+			retval := "june";
+		case JULY:
+			retval := "july";
+		case AUGUST:
+			retval := "august";
+		case SEPTEMBER:
+			retval := "september";
+		case OCTOBER:
+			retval := "october";
+		case NOVEMBER:
+			retval := "november";
+		case DECEMBER:
+			retval := "december";
+		case else:
+			retval := "unknown";
+	};
+};
+
+function date_to_military(time : integer = -1) : string
+	var year, month, month_day;
+{
+	time_components(time , year, , month, month_day);
+
+	return pad0(month_day) + "/" + pad0(month) + "/" + year;
+};
+
+function date_to_string(time : integer = -1) : string
+{
+	var year, month, month_day;
+
+	time_components(time , year, , month, month_day);
+
+	return month_day + " " + capitalise(get_month_name(month)) + " " + year;
+};

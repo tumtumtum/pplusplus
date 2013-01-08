@@ -1,0 +1,11 @@
+using "string.p++";
+
+function testop(s : string = "-1")
+{
+	println(s);
+};
+
+function main()
+{
+	testop();
+};

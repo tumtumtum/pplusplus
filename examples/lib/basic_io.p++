@@ -1,0 +1,60 @@
+/*
+ * @file basic_io.p++
+ *
+ * Basic IO functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+include "opcodes.p++";
+
+function write(x : integer) : integer
+{
+	machine_code
+	{
+		OC_LIT		0	0
+		OC_LOD		%x	x
+		OC_WRT		0	0		
+		OC_SRV		0	1
+	};
+};
+
+function write_character(x : character) : character
+{
+	machine_code
+	{
+		OC_LIT		0	0
+		OC_LOD		%x	x
+		OC_WCH		0	0		
+		OC_SRV		0	1
+	};
+};
+
+function writeln(x : integer) : integer
+{
+	write(x);
+	write_character('\n');
+};
+
+function write_integer(x : integer) : integer
+{
+	machine_code
+	{
+		OC_LIT		0	0
+		OC_LOD		%x	x
+		OC_WRT		0	0
+		OC_SRV		0	1
+	};
+};
+
+function write_float(x : float) : float
+{
+	machine_code
+	{
+		OC_LIT		0	0
+		OC_LOD		%x	x
+		OC_WRF		0	0		
+		OC_SRV		0	1
+	};
+};

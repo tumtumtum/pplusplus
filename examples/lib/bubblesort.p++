@@ -1,0 +1,66 @@
+/*
+ * @file bubblesort.p++
+ *
+ * Bubblesort for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+include "io.p++";
+include "array.p++";
+include "math.p++";
+include "time.p++";
+
+var x, y, z, arr : integer[..];
+
+function swap(arr : integer[], x : integer, y : integer)
+	var i : integer;
+{
+	i := arr[x];
+	arr[x] := arr[y];
+	arr[y] := i;
+};
+
+function bubblesort(arrr : integer[])
+	var i, j, size;
+{
+	size := array_length(arrr);
+
+pragma boundary_check 0;
+
+	for i := 0 to (size - 2)
+	{	
+		for j := 0 to (size - i - 2)
+		{	
+			if (arrr[j] > arrr[j + 1])
+			{
+				swap(arrr, j, j + 1);
+			};
+		};
+	};
+
+pragma boundary_check 1;
+
+};
+
+var i, size;
+
+main
+{	
+	randomize(system_time());
+
+	size := 10000;
+
+	for i := 0 to size - 1
+	{
+		arr[i] := random(10000);
+	};
+
+	bubblesort(arr);
+
+	for i := 0 to size - 1
+	{
+		write(arr[i]);
+	};
+};

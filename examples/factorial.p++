@@ -1,0 +1,8 @@
+using "lang.p++";
+using "stream.p++";
+using "bigmath.p++";
+
+function main(args : string)
+{
+	println(bigger_factorial(args));
+};

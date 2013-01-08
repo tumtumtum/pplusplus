@@ -1,0 +1,66 @@
+/*
+ * @file file.p++
+ *
+ * File functions for P++.
+ *
+ * @author			Thong Nguyen
+ * @lastupdate		26 May 2000
+ */
+
+using "stream.p++";
+include "lang.p++";
+include "string.p++";
+
+const EOF		=	-1;
+const F_READ	=	0x1;
+const F_WRITE	=	0x2;
+const F_APPEND	=	0x4;
+const F_CREATE	=	0x80;
+const F_TEXT	=	0x100;
+const F_BINARY	=	0x200;
+
+function f_open(name : string, flags = F_READ) : stream
+	var len;
+{
+	len := string_length(name);
+
+	machine_code
+	{
+		OC_SRG		ARRAY_HEADER_SIZE		REG_CX
+		OC_LOD		%flags					flags		
+		OC_LOD		%name					name
+		OC_LOD		%len					len	
+		OC_FOF		0						0
+		OC_SRV		0						1
+	};
+};
+
+function f_close(z : stream)
+{
+	machine_code
+	{
+		OC_LOD		%z			z
+		OC_FCF		0			0
+	};
+
+	return 0;
+};
+
+function f_eof(z : stream) : boolean
+{
+	machine_code
+	{
+		OC_LOD		%z			z
+		OC_EOF		0			0
+		OC_SRV		0			1
+	};
+};
+
+function f_contents(name : string) : string
+{
+	var z : stream := f_open(name);
+
+	retval := readall(z);
+
+	f_close(z);
+};

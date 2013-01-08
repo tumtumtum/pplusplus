@@ -1,0 +1,6 @@
+using "string.p++";
+
+function main()
+{
+	println(s2f("0.412332145"));
+};
