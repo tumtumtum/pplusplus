@@ -8,7 +8,7 @@ I wrote the compiler and interpreter for P++ at University back in 2000 as part 
 	* Strings
 	* Reference counted GC
 	* Lambda Expressions
-	* Big numbers
+	* Integrated large integer & float support
 	* Inline assembly/bytecode
 	* A modest library of core functions
 	
@@ -19,16 +19,26 @@ Whilst going through very old disks, I discovered the code and have uploaded it 
 Sample P++ source/programs are in the examples directory. Refer to the [P++ User Manual](https://github.com/tumtumtum/pplusplus/blob/master/docs/Users-Manual.pdf?raw=true) for a detailed language spec.
 
 ```
-// Hello World in P++
-
+/* Hello World */
 using "stream.p++";
 
 function main() : integer
 {
-  println("Hello World");
+	println("Hello World");
 };
 ```
 
+```
+/* Large integer factorial */
+using "lang.p++";
+using "string.p++";
+using "bignumbers.p++";
+
+function big_factorial(x : bignumber) : bignumber
+{	
+	return (x > 1) ? x * big_factorial(x - 1) : 1#;
+};
+```
 
 ```
 Compiler/Interpreter usage:
