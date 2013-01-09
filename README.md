@@ -18,12 +18,22 @@ Whilst going through very old disks, I discovered the code and have uploaded it 
 
 Sample P++ source/programs are in the examples directory. Refer to the [P++ User Manual](https://github.com/tumtumtum/pplusplus/blob/master/docs/Users-Manual.pdf?raw=true) for a detailed language spec.
 
+```
+// Hello World in P++
+
+using "stream.p++";
+
+function main() : integer
+{
+  println("Hello World");
+};
+```
+
 
 ```
 Compiler/Interpreter usage:
 
 > p++ helloworld.p++
 Hello World!
-> p++ echo.p++ Hello!
-Hello!
 ```
+
